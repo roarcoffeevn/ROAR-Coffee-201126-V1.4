@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Coins, PlusCircle, RefreshCw, Wallet } from 'lucide-react';
+import { CheckCircle2, Clock, Coins, PlusCircle, RefreshCw, Wallet, XCircle } from 'lucide-react';
 import { useI18n } from '../i18n/I18nContext';
 import { useStore } from '../context/StoreContext';
 
@@ -8,6 +8,9 @@ export const AdminWalletPointsPanel: React.FC<{ onGoProducts?: () => void }> = (
   const { apiFetch, showToast } = useStore();
   const [members, setMembers] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [topupRequests, setTopupRequests] = useState<any[]>([]);
+  const [approvalMode, setApprovalMode] = useState<'manual' | 'auto'>('manual');
+  const [processingReqId, setProcessingReqId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
   const [selectedUserId, setSelectedUserId] = useState<number>(0);
@@ -20,18 +23,66 @@ export const AdminWalletPointsPanel: React.FC<{ onGoProducts?: () => void }> = (
   const loadWallets = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch('/api/admin/wallets');
+      const [res, reqRes] = await Promise.all([
+        apiFetch('/api/admin/wallets'),
+        apiFetch('/api/admin/wallet/requests'),
+      ]);
       if (res.ok) {
         const d = await res.json();
-        const list = Array.isArray(d.members) ? d.members : [];
+        const list = Array.isArray(d.members) ? d.members : Array.isArray(d.users) ? d.users : [];
         setMembers(list);
         setTransactions(Array.isArray(d.transactions) ? d.transactions : []);
         if (!selectedUserId && list.length > 0) {
           setSelectedUserId(list[0].id);
         }
       }
+      if (reqRes.ok) {
+        const rd = await reqRes.json();
+        setApprovalMode(rd.approvalMode === 'auto' ? 'auto' : 'manual');
+        setTopupRequests(Array.isArray(rd.requests) ? rd.requests : []);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleChangeApprovalMode = async (mode: 'manual' | 'auto') => {
+    const res = await apiFetch('/api/admin/wallet/approval-mode', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode }),
+    });
+    if (res.ok) {
+      setApprovalMode(mode);
+      showToast(
+        mode === 'manual'
+          ? t('Đã chuyển sang chế độ Duyệt thủ công khi công ty nhận chuyển khoản', 'Switched to Manual bank verification mode')
+          : t('Đã chuyển sang chế độ Tự động duyệt nạp ví', 'Switched to Auto-approve mode')
+      );
+    }
+  };
+
+  const handleReviewRequest = async (id: number, action: 'approve' | 'reject') => {
+    setProcessingReqId(id);
+    try {
+      const res = await apiFetch(`/api/admin/wallet/requests/${id}/${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok) {
+        showToast(
+          action === 'approve'
+            ? t('Đã xác nhận nhận tiền, cộng Ví ROAR & gửi thông báo thành công cho thành viên!', 'Approved top-up, credited wallet & notified member!')
+            : t('Đã từ chối yêu cầu nạp tiền & thông báo cho thành viên.', 'Rejected top-up request & notified member.')
+        );
+        await loadWallets();
+      } else {
+        showToast(d.error || t('Không thể xử lý yêu cầu', 'Unable to process request'));
+      }
+    } finally {
+      setProcessingReqId(null);
     }
   };
 
@@ -97,12 +148,139 @@ export const AdminWalletPointsPanel: React.FC<{ onGoProducts?: () => void }> = (
           <button
             type="button"
             onClick={loadWallets}
-            className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 inline-flex items-center gap-1.5 font-semibold text-slate-700 cursor-pointer"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>{t('Làm mới', 'Refresh')}</span>
           </button>
         </div>
+      </div>
+
+      {/* Approval Mode Switcher (Manual vs Auto) */}
+      <div className="p-3.5 rounded-xl bg-[#F8F5EF] border border-[#C6A667]/35 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="font-bold text-slate-900">
+            {t('Chế độ duyệt yêu cầu nạp tiền Ví ROAR', 'ROAR Wallet Top-Up Approval Mode')}
+          </p>
+          <p className="text-[11px] text-slate-600 mt-0.5">
+            {approvalMode === 'manual'
+              ? t(
+                  'Đang áp dụng Duyệt thủ công: Thành viên chuyển khoản → Báo về Admin → Kế toán kiểm tra tài khoản công ty đã nhận tiền rồi bấm Duyệt cộng ví & báo thành viên.',
+                  'Manual mode active: Member transfers → Admin verifies company bank receipt → Approves to credit wallet & notify member.'
+                )
+              : t(
+                  'Đang áp dụng Tự động duyệt: Hệ thống tự cộng tiền vào Ví ROAR ngay khi thành viên bấm xác nhận nạp.',
+                  'Auto mode active: Wallet is credited immediately upon member top-up submission.'
+                )}
+          </p>
+        </div>
+        <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1 gap-1">
+          <button
+            type="button"
+            onClick={() => handleChangeApprovalMode('manual')}
+            className={`px-3 py-1.5 rounded-md font-semibold text-xs cursor-pointer transition-colors ${
+              approvalMode === 'manual' ? 'bg-[#00552B] text-white' : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            {t('Duyệt thủ công', 'Manual Approval')}
+          </button>
+          <button
+            type="button"
+            onClick={() => handleChangeApprovalMode('auto')}
+            className={`px-3 py-1.5 rounded-md font-semibold text-xs cursor-pointer transition-colors ${
+              approvalMode === 'auto' ? 'bg-[#00552B] text-white' : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            {t('Tự động duyệt', 'Auto Approval')}
+          </button>
+        </div>
+      </div>
+
+      {/* Pending & Recent Top-Up Requests */}
+      <div className="rounded-xl border border-slate-200 overflow-hidden">
+        <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+          <h4 className="font-bold text-slate-900 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-amber-600" />
+            <span>{t('Yêu cầu nạp tiền từ Thành viên', 'Member Top-Up Requests')}</span>
+            {topupRequests.filter((r) => r.status === 'pending').length > 0 && (
+              <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">
+                {topupRequests.filter((r) => r.status === 'pending').length} {t('chờ duyệt', 'pending')}
+              </span>
+            )}
+          </h4>
+        </div>
+        {topupRequests.length === 0 ? (
+          <p className="p-4 text-slate-500 text-xs">
+            {t('Chưa có yêu cầu nạp tiền nào từ thành viên.', 'No member top-up requests yet.')}
+          </p>
+        ) : (
+          <div className="divide-y divide-slate-100 max-h-72 overflow-y-auto">
+            {topupRequests.map((req) => (
+              <div key={req.id} className="p-3.5 flex flex-wrap items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-bold text-slate-900">{req.full_name || req.email}</span>
+                    {req.member_code && (
+                      <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+                        {req.member_code}
+                      </span>
+                    )}
+                    <span className="font-mono text-[10px] text-[#00552B] font-semibold">{req.reference_code}</span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        req.status === 'pending'
+                          ? 'bg-amber-100 text-amber-800'
+                          : req.status === 'approved'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : 'bg-red-100 text-red-700'
+                      }`}
+                    >
+                      {req.status === 'pending'
+                        ? t('Chờ xác nhận tiền về', 'Pending')
+                        : req.status === 'approved'
+                        ? t('Đã duyệt & cộng ví', 'Approved')
+                        : t('Đã từ chối', 'Rejected')}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600">
+                    {t('Chuyển khoản:', 'Transfer:')}{' '}
+                    <strong className="font-mono text-slate-900">{Number(req.amount_vnd || 0).toLocaleString('vi-VN')}₫</strong>
+                    {' · '}
+                    {t('Cộng ví:', 'Credit:')}{' '}
+                    <strong className="font-mono text-[#00552B]">
+                      +{Number(req.total_credit_vnd || 0).toLocaleString('vi-VN')}₫ (+{req.bonus_pct}%)
+                    </strong>
+                    {' · '}
+                    +{req.points_delta || 0} {t('điểm', 'pts')}
+                  </p>
+                </div>
+
+                {req.status === 'pending' && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={processingReqId === req.id}
+                      onClick={() => handleReviewRequest(req.id, 'approve')}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#00552B] text-white font-semibold hover:bg-[#004422] disabled:opacity-50 cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>{t('Đã nhận tiền — Duyệt', 'Approve')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      disabled={processingReqId === req.id}
+                      onClick={() => handleReviewRequest(req.id, 'reject')}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-red-200 text-red-600 font-semibold hover:bg-red-50 disabled:opacity-50 cursor-pointer"
+                    >
+                      <XCircle className="w-3.5 h-3.5" />
+                      <span>{t('Từ chối', 'Reject')}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Quick Admin Top-up / Points Adjust Form */}

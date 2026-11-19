@@ -745,6 +745,11 @@ app.get('/api/wallet', requireAuth, (req: AuthedRequest, res) => {
   });
 });
 
+function getWalletApprovalMode(): 'manual' | 'auto' {
+  const row = db.prepare(`SELECT value FROM site_settings WHERE key = 'wallet_approval_mode'`).get() as any;
+  return row?.value === 'auto' ? 'auto' : 'manual';
+}
+
 app.post('/api/wallet/topup', requireAuth, (req: AuthedRequest, res) => {
   const amountVnd = Math.floor(Number(req.body?.amountVnd || 0));
   if (!Number.isFinite(amountVnd) || amountVnd < 50000) {
@@ -755,7 +760,51 @@ app.post('/api/wallet/topup', requireAuth, (req: AuthedRequest, res) => {
   const bonusVnd = Math.round((amountVnd * bonusPct) / 100);
   const totalCreditVnd = amountVnd + bonusVnd;
   const pointsDelta = Math.floor(totalCreditVnd / 10000);
-  const refCode = `TOPUP-${Date.now().toString(36).toUpperCase()}`;
+  const refCode = String(req.body?.referenceCode || `TOPUP-${Date.now().toString(36).toUpperCase()}`);
+  const approvalMode = getWalletApprovalMode();
+
+  if (approvalMode === 'manual') {
+    const ins = db
+      .prepare(`
+        INSERT INTO wallet_topup_requests (user_id, amount_vnd, bonus_pct, bonus_vnd, total_credit_vnd, points_delta, reference_code, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
+      `)
+      .run(req.authUser!.userId, amountVnd, bonusPct, bonusVnd, totalCreditVnd, pointsDelta, refCode);
+
+    // Notify member that top-up request is pending company bank verification
+    db.prepare(`
+      INSERT INTO user_notifications (user_id, category, title_vi, title_en, body_vi, body_en, link_url)
+      VALUES (?, 'loyalty', ?, ?, ?, ?, '/account?tab=wallet')
+    `).run(
+      req.authUser!.userId,
+      `Đã tiếp nhận yêu cầu nạp Ví ROAR (${refCode})`,
+      `ROAR Wallet top-up request received (${refCode})`,
+      `Yêu cầu nạp ${amountVnd.toLocaleString('vi-VN')}₫ (+${bonusPct}% thưởng = ${totalCreditVnd.toLocaleString('vi-VN')}₫) đang chờ kế toán ROAR xác nhận chuyển khoản.`,
+      `Your ${amountVnd.toLocaleString('en-US')} VND top-up request (+${bonusPct}% bonus) is pending bank transfer verification.`
+    );
+
+    const currentUserRow = db.prepare('SELECT wallet_balance_vnd FROM users WHERE id = ?').get(req.authUser!.userId) as any;
+    res.json({
+      ok: true,
+      status: 'pending',
+      approvalMode: 'manual',
+      requestId: Number(ins.lastInsertRowid),
+      referenceCode: refCode,
+      amountVnd,
+      bonusPct,
+      bonusVnd,
+      totalCreditVnd,
+      pointsDelta,
+      walletBalanceVnd: Number(currentUserRow?.wallet_balance_vnd || 0),
+    });
+    return;
+  }
+
+  // Auto approval mode
+  db.prepare(`
+    INSERT INTO wallet_topup_requests (user_id, amount_vnd, bonus_pct, bonus_vnd, total_credit_vnd, points_delta, reference_code, status, reviewed_at, admin_note)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', datetime('now'), 'Tự động duyệt')
+  `).run(req.authUser!.userId, amountVnd, bonusPct, bonusVnd, totalCreditVnd, pointsDelta, refCode);
 
   db.prepare('UPDATE users SET wallet_balance_vnd = wallet_balance_vnd + ? WHERE id = ?').run(
     totalCreditVnd,
@@ -787,9 +836,22 @@ app.post('/api/wallet/topup', requireAuth, (req: AuthedRequest, res) => {
     );
   }
 
+  db.prepare(`
+    INSERT INTO user_notifications (user_id, category, title_vi, title_en, body_vi, body_en, link_url)
+    VALUES (?, 'loyalty', ?, ?, ?, ?, '/account?tab=wallet')
+  `).run(
+    req.authUser!.userId,
+    `Nạp Ví ROAR thành công +${totalCreditVnd.toLocaleString('vi-VN')}₫`,
+    `ROAR Wallet top-up approved +${totalCreditVnd.toLocaleString('en-US')} VND`,
+    `Tài khoản công ty đã ghi nhận khoản nạp ${amountVnd.toLocaleString('vi-VN')}₫ (+${bonusPct}% thưởng) và cộng +${pointsDelta} điểm thưởng.`,
+    `Your top-up of ${amountVnd.toLocaleString('en-US')} VND (+${bonusPct}% bonus) has been credited with +${pointsDelta} pts.`
+  );
+
   const updatedUser = db.prepare('SELECT wallet_balance_vnd FROM users WHERE id = ?').get(req.authUser!.userId) as any;
   res.json({
     ok: true,
+    status: 'approved',
+    approvalMode: 'auto',
     referenceCode: refCode,
     amountVnd,
     bonusPct,
@@ -798,6 +860,122 @@ app.post('/api/wallet/topup', requireAuth, (req: AuthedRequest, res) => {
     pointsDelta,
     walletBalanceVnd: Number(updatedUser?.wallet_balance_vnd || 0),
   });
+});
+
+app.get('/api/admin/wallet/requests', requireAdmin, (_req, res) => {
+  const requests = db
+    .prepare(`
+      SELECT r.*, u.full_name, u.email, u.member_code
+      FROM wallet_topup_requests r
+      LEFT JOIN users u ON u.id = r.user_id
+      ORDER BY CASE WHEN r.status = 'pending' THEN 0 ELSE 1 END, r.id DESC
+      LIMIT 100
+    `)
+    .all();
+  res.json({
+    approvalMode: getWalletApprovalMode(),
+    requests,
+  });
+});
+
+app.patch('/api/admin/wallet/approval-mode', requireAdmin, (req: AuthedRequest, res) => {
+  const mode = req.body?.mode === 'auto' ? 'auto' : 'manual';
+  db.prepare(
+    `INSERT INTO site_settings (key, value) VALUES ('wallet_approval_mode', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`
+  ).run(mode);
+  res.json({ ok: true, approvalMode: mode });
+});
+
+app.post('/api/admin/wallet/requests/:id/approve', requireAdmin, (req: AuthedRequest, res) => {
+  const id = Number(req.params.id);
+  const row = db.prepare('SELECT * FROM wallet_topup_requests WHERE id = ?').get(id) as any;
+  if (!row) {
+    res.status(404).json({ error: 'Không tìm thấy yêu cầu nạp tiền.' });
+    return;
+  }
+  if (row.status !== 'pending') {
+    res.status(400).json({ error: 'Yêu cầu này đã được xử lý trước đó.' });
+    return;
+  }
+  const adminNote = String(req.body?.adminNote || 'Công ty đã xác nhận nhận tiền chuyển khoản').trim();
+
+  db.prepare(
+    `UPDATE wallet_topup_requests SET status = 'approved', admin_note = ?, reviewed_by = ?, reviewed_at = datetime('now') WHERE id = ?`
+  ).run(adminNote, req.authUser!.userId, id);
+
+  db.prepare('UPDATE users SET wallet_balance_vnd = wallet_balance_vnd + ? WHERE id = ?').run(
+    Number(row.total_credit_vnd),
+    row.user_id
+  );
+
+  db.prepare(`
+    INSERT INTO wallet_transactions (user_id, tx_type, amount_vnd, bonus_vnd, bonus_pct, points_delta, note, reference_code)
+    VALUES (?, 'topup', ?, ?, ?, ?, ?, ?)
+  `).run(
+    row.user_id,
+    row.amount_vnd,
+    row.bonus_vnd,
+    row.bonus_pct,
+    row.points_delta,
+    `Duyệt nạp ví ${Number(row.amount_vnd).toLocaleString('vi-VN')}₫ + Thưởng ${row.bonus_pct}% (${adminNote})`,
+    row.reference_code
+  );
+
+  if (Number(row.points_delta) > 0) {
+    db.prepare(`
+      INSERT INTO points_ledger (user_id, order_id, entry_type, points, description_vi, description_en, expires_at)
+      VALUES (?, NULL, 'earn_available', ?, ?, ?, datetime('now', '+365 days'))
+    `).run(
+      row.user_id,
+      row.points_delta,
+      `Tích điểm thưởng khi duyệt nạp Ví ROAR (${row.reference_code})`,
+      `Reward points earned from approved ROAR Wallet top-up (${row.reference_code})`
+    );
+  }
+
+  db.prepare(`
+    INSERT INTO user_notifications (user_id, category, title_vi, title_en, body_vi, body_en, link_url)
+    VALUES (?, 'loyalty', ?, ?, ?, ?, '/account?tab=wallet')
+  `).run(
+    row.user_id,
+    `Công ty đã nhận tiền! Nạp Ví ROAR thành công +${Number(row.total_credit_vnd).toLocaleString('vi-VN')}₫`,
+    `Bank transfer confirmed! +${Number(row.total_credit_vnd).toLocaleString('en-US')} VND credited`,
+    `ROAR COFFEE đã xác nhận nhận chuyển khoản ${Number(row.amount_vnd).toLocaleString('vi-VN')}₫ (Mã ${row.reference_code}). Ví ROAR đã được cộng ${Number(row.total_credit_vnd).toLocaleString('vi-VN')}₫ (+${row.bonus_pct}% thưởng) và +${row.points_delta} điểm.`,
+    `ROAR COFFEE confirmed your bank transfer (${row.reference_code}). Credited ${Number(row.total_credit_vnd).toLocaleString('en-US')} VND and +${row.points_delta} pts.`
+  );
+
+  res.json({ ok: true });
+});
+
+app.post('/api/admin/wallet/requests/:id/reject', requireAdmin, (req: AuthedRequest, res) => {
+  const id = Number(req.params.id);
+  const row = db.prepare('SELECT * FROM wallet_topup_requests WHERE id = ?').get(id) as any;
+  if (!row) {
+    res.status(404).json({ error: 'Không tìm thấy yêu cầu nạp tiền.' });
+    return;
+  }
+  if (row.status !== 'pending') {
+    res.status(400).json({ error: 'Yêu cầu này đã được xử lý trước đó.' });
+    return;
+  }
+  const adminNote = String(req.body?.adminNote || 'Chưa nhận được chuyển khoản hợp lệ').trim();
+
+  db.prepare(
+    `UPDATE wallet_topup_requests SET status = 'rejected', admin_note = ?, reviewed_by = ?, reviewed_at = datetime('now') WHERE id = ?`
+  ).run(adminNote, req.authUser!.userId, id);
+
+  db.prepare(`
+    INSERT INTO user_notifications (user_id, category, title_vi, title_en, body_vi, body_en, link_url)
+    VALUES (?, 'loyalty', ?, ?, ?, ?, '/account?tab=wallet')
+  `).run(
+    row.user_id,
+    `Yêu cầu nạp Ví ROAR chưa được duyệt (${row.reference_code})`,
+    `ROAR Wallet top-up request declined (${row.reference_code})`,
+    `Yêu cầu nạp ${Number(row.amount_vnd).toLocaleString('vi-VN')}₫ chưa được duyệt. Lý do: ${adminNote}. Vui lòng liên hệ Hotline/Zalo ROAR để được hỗ trợ.`,
+    `Your top-up request (${row.reference_code}) was declined. Reason: ${adminNote}.`
+  );
+
+  res.json({ ok: true });
 });
 
 const CHECKIN_REWARD_SCHEDULE = [

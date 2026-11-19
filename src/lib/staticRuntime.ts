@@ -767,6 +767,49 @@ export async function handleStaticApiFallback(
         points: target.points,
       });
     }
+    if (pathname === '/api/admin/wallet/requests' && method === 'GET') {
+      const approvalMode = state.settingsOverlay.wallet_approval_mode === 'auto' ? 'auto' : 'manual';
+      const requests = (state.settingsOverlay._wallet_requests ? JSON.parse(state.settingsOverlay._wallet_requests) : []) as any[];
+      return jsonResponse({ approvalMode, requests });
+    }
+    if (pathname === '/api/admin/wallet/approval-mode' && method === 'PATCH') {
+      const mode = body.mode === 'auto' ? 'auto' : 'manual';
+      state.settingsOverlay.wallet_approval_mode = mode;
+      writeState(state);
+      return jsonResponse({ ok: true, approvalMode: mode });
+    }
+    if (/^\/api\/admin\/wallet\/requests\/\d+\/(approve|reject)$/.test(pathname) && method === 'POST') {
+      const parts = pathname.split('/');
+      const action = parts.pop();
+      const id = Number(parts.pop());
+      const requests = (state.settingsOverlay._wallet_requests ? JSON.parse(state.settingsOverlay._wallet_requests) : []) as any[];
+      const reqItem = requests.find((r) => r.id === id);
+      if (!reqItem) return jsonResponse({ error: 'Không tìm thấy yêu cầu nạp tiền.' }, 404);
+      if (reqItem.status !== 'pending') return jsonResponse({ error: 'Yêu cầu đã được xử lý.' }, 400);
+      reqItem.status = action === 'approve' ? 'approved' : 'rejected';
+      reqItem.reviewed_at = new Date().toISOString();
+      if (action === 'approve') {
+        const target = state.users.find((u) => u.id === reqItem.user_id);
+        if (target) {
+          target.walletBalance = (target.walletBalance ?? 0) + Number(reqItem.total_credit_vnd || 0);
+          target.points = (target.points ?? 0) + Number(reqItem.points_delta || 0);
+          state.walletTransactions.unshift({
+            id: Date.now(),
+            user_id: target.id,
+            type: 'topup',
+            amount: reqItem.amount_vnd,
+            bonus_amount: reqItem.bonus_vnd,
+            points_delta: reqItem.points_delta,
+            balance_after: target.walletBalance,
+            note: `Duyệt nạp ví ${Number(reqItem.amount_vnd).toLocaleString('vi-VN')}₫ (+${reqItem.bonus_pct}%)`,
+            created_at: new Date().toISOString(),
+          });
+        }
+      }
+      state.settingsOverlay._wallet_requests = JSON.stringify(requests);
+      writeState(state);
+      return jsonResponse({ ok: true });
+    }
   }
 
   // ROAR Wallet (Member)
@@ -776,7 +819,8 @@ export async function handleStaticApiFallback(
     const transactions = state.walletTransactions.filter((t) => t.user_id === me.id).slice(0, 50);
     return jsonResponse({
       walletBalance: me.walletBalance ?? 0,
-      points: me.points ?? 0,
+      walletBalanceVnd: me.walletBalance ?? 0,
+      points: { available: me.points ?? 120, pending: 0, redeemed: 0 },
       transactions,
     });
   }
@@ -784,13 +828,49 @@ export async function handleStaticApiFallback(
   if (pathname === '/api/wallet/topup' && method === 'POST') {
     const me = resolveTokenUser(headers, state);
     if (!me) return jsonResponse({ error: 'Vui lòng đăng nhập.' }, 401);
-    const amount = Math.max(0, Number(body.amount || 0));
+    const amount = Math.max(0, Number(body.amountVnd || body.amount || 0));
     if (amount < 50000) return jsonResponse({ error: 'Số tiền nạp tối thiểu 50.000đ.' }, 400);
-    const bonusRate =
-      amount >= 2000000 ? 0.3 : amount >= 1000000 ? 0.2 : amount >= 500000 ? 0.15 : 0.1;
-    const bonusAmount = Math.round(amount * bonusRate);
+    const bonusPct = amount >= 2000000 ? 30 : amount >= 1000000 ? 20 : amount >= 500000 ? 15 : 10;
+    const bonusAmount = Math.round((amount * bonusPct) / 100);
     const totalCredit = amount + bonusAmount;
-    const bonusPoints = Math.floor(amount / 10000);
+    const bonusPoints = Math.floor(totalCredit / 10000);
+    const refCode = `TOPUP-${Date.now().toString(36).toUpperCase()}`;
+    const approvalMode = state.settingsOverlay.wallet_approval_mode === 'auto' ? 'auto' : 'manual';
+    const requests = (state.settingsOverlay._wallet_requests ? JSON.parse(state.settingsOverlay._wallet_requests) : []) as any[];
+
+    if (approvalMode === 'manual') {
+      const reqObj = {
+        id: Date.now(),
+        user_id: me.id,
+        full_name: me.fullName,
+        email: me.email,
+        member_code: me.memberCode,
+        amount_vnd: amount,
+        bonus_pct: bonusPct,
+        bonus_vnd: bonusAmount,
+        total_credit_vnd: totalCredit,
+        points_delta: bonusPoints,
+        reference_code: refCode,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+      };
+      requests.unshift(reqObj);
+      state.settingsOverlay._wallet_requests = JSON.stringify(requests);
+      writeState(state);
+      return jsonResponse({
+        ok: true,
+        status: 'pending',
+        approvalMode: 'manual',
+        referenceCode: refCode,
+        amountVnd: amount,
+        bonusPct,
+        bonusVnd: bonusAmount,
+        totalCreditVnd: totalCredit,
+        pointsDelta: bonusPoints,
+        walletBalanceVnd: me.walletBalance ?? 0,
+      });
+    }
+
     me.walletBalance = (me.walletBalance ?? 0) + totalCredit;
     me.points = (me.points ?? 0) + bonusPoints;
     const tx = {
@@ -801,13 +881,22 @@ export async function handleStaticApiFallback(
       bonus_amount: bonusAmount,
       points_delta: bonusPoints,
       balance_after: me.walletBalance,
-      note: `Nạp ví ROAR +${Math.round(bonusRate * 100)}% thưởng`,
+      note: `Nạp ví ROAR +${bonusPct}% thưởng`,
       created_at: new Date().toISOString(),
     };
     state.walletTransactions.unshift(tx);
     writeState(state);
     return jsonResponse({
       ok: true,
+      status: 'approved',
+      approvalMode: 'auto',
+      referenceCode: refCode,
+      amountVnd: amount,
+      bonusPct,
+      bonusVnd: bonusAmount,
+      totalCreditVnd: totalCredit,
+      pointsDelta: bonusPoints,
+      walletBalanceVnd: me.walletBalance,
       walletBalance: me.walletBalance,
       points: me.points,
       bonusAmount,

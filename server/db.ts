@@ -1395,6 +1395,23 @@ function seedInitialData(): void {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
 
+    CREATE TABLE IF NOT EXISTS wallet_topup_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      amount_vnd INTEGER NOT NULL,
+      bonus_pct INTEGER NOT NULL DEFAULT 0,
+      bonus_vnd INTEGER NOT NULL DEFAULT 0,
+      total_credit_vnd INTEGER NOT NULL,
+      points_delta INTEGER NOT NULL DEFAULT 0,
+      reference_code TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected')),
+      admin_note TEXT DEFAULT '',
+      reviewed_by INTEGER,
+      reviewed_at TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
     CREATE TABLE IF NOT EXISTS daily_checkins (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,

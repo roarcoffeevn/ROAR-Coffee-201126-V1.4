@@ -88,12 +88,21 @@ export const AccountPage: React.FC = () => {
       });
       const d = await res.json().catch(() => ({}));
       if (res.ok) {
-        showToast(
-          t(
-            `Nạp thành công ${amountVnd.toLocaleString('vi-VN')}₫ (+${d.bonusPct}% thưởng = ${Number(d.totalCreditVnd || amountVnd).toLocaleString('vi-VN')}₫ vào Ví & +${d.pointsDelta || 0} điểm)`,
-            `Topped up ${amountVnd.toLocaleString('vi-VN')} VND (+${d.bonusPct}% bonus credited & +${d.pointsDelta || 0} pts)`
-          )
-        );
+        if (d.status === 'pending') {
+          showToast(
+            t(
+              `Đã gửi yêu cầu nạp ${amountVnd.toLocaleString('vi-VN')}₫ (Mã ${d.referenceCode}). Hệ thống sẽ cộng ${Number(d.totalCreditVnd || amountVnd).toLocaleString('vi-VN')}₫ vào Ví ROAR và thông báo ngay khi công ty xác nhận nhận tiền!`,
+              `Top-up request (${d.referenceCode}) submitted! Your wallet will be credited and notified as soon as ROAR confirms your bank transfer.`
+            )
+          );
+        } else {
+          showToast(
+            t(
+              `Nạp thành công ${amountVnd.toLocaleString('vi-VN')}₫ (+${d.bonusPct}% thưởng = ${Number(d.totalCreditVnd || amountVnd).toLocaleString('vi-VN')}₫ vào Ví & +${d.pointsDelta || 0} điểm)`,
+              `Topped up ${amountVnd.toLocaleString('vi-VN')} VND (+${d.bonusPct}% bonus credited & +${d.pointsDelta || 0} pts)`
+            )
+          );
+        }
         await Promise.all([loadWallet(), loadDashboard(), refreshUser()]);
       } else {
         showToast(d.error || t('Không thể nạp ví lúc này', 'Unable to top up wallet right now'));
