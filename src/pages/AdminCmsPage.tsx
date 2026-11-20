@@ -60,8 +60,9 @@ import { JournalManagerSection, type JournalAdminArticle } from '../components/a
 import { PagesManagerSection } from '../components/admin/PagesManagerSection';
 import { TeamRbacSection, type AdminTeamMember, type NonAdminCandidate } from '../components/admin/TeamRbacSection';
 import { AdminMenuCategoryManager } from '../components/admin/AdminMenuCategoryManager';
+import { AdminHeroBannerManager } from '../components/admin/AdminHeroBannerManager';
 
-type CmsSection = AdminPermission | 'menus';
+type CmsSection = AdminPermission | 'menus' | 'hero';
 
 const CATEGORY_LABELS_VI: Record<string, string> = {
   roasted: 'Cà phê Rang xay',
@@ -270,7 +271,7 @@ export const AdminCmsPage: React.FC = () => {
   useEffect(() => {
     if (
       requestedSectionParam &&
-      (requestedSectionParam === 'menus'
+      (requestedSectionParam === 'menus' || requestedSectionParam === 'hero'
         ? hasAdminPermission(user, 'settings')
         : hasAdminPermission(user, requestedSectionParam))
     ) {
@@ -805,6 +806,7 @@ export const AdminCmsPage: React.FC = () => {
           count: inquiries.length + newsletterSubscribers.length,
         },
         { id: 'brand', label: t('Linh vật & Vùng trồng', 'Mascots & Origins'), icon: <Compass className="w-4 h-4" /> },
+        { id: 'hero', label: t('Hero Banner & Carousel', 'Hero & Carousel'), icon: <ImageIcon className="w-4 h-4" /> },
         { id: 'menus', label: t('Menu & Danh mục', 'Menus & Categories'), icon: <Menu className="w-4 h-4" /> },
         { id: 'settings', label: t('Cài đặt Website', 'Site Settings'), icon: <Settings className="w-4 h-4" /> },
         {
@@ -821,7 +823,9 @@ export const AdminCmsPage: React.FC = () => {
     .map((grp) => ({
       ...grp,
       items: grp.items.filter((item) =>
-        item.id === 'menus' ? hasAdminPermission(user, 'settings') : hasAdminPermission(user, item.id)
+        item.id === 'menus' || item.id === 'hero'
+          ? hasAdminPermission(user, 'settings')
+          : hasAdminPermission(user, item.id)
       ),
     }))
     .filter((grp) => grp.items.length > 0);
@@ -2459,6 +2463,14 @@ export const AdminCmsPage: React.FC = () => {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* 9a. HERO BANNER & CAROUSEL MANAGER */}
+          {resolvedSection === 'hero' && hasAdminPermission(user, 'settings') && (
+            <AdminHeroBannerManager
+              settings={siteSettings}
+              onSaved={(next) => setSiteSettings(next)}
+            />
           )}
 
           {/* 9b. WORDPRESS-STYLE MENUS & CATEGORIES */}

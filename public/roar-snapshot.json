@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-11-19T18:17:59.738Z",
+  "exportedAt": "2026-11-20T16:23:38.888Z",
   "tables": {
     "products": [
       {
@@ -448,7 +448,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S14 · Natural Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/robusta-natural.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -493,7 +493,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S14 · Honey Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/robusta-honey.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -538,7 +538,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S14 · CBU Washed Commercial Designation",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/robusta-cbu.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -583,7 +583,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S16 · Natural Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/robusta-natural.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -628,7 +628,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S16 · Honey Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/robusta-honey.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -673,7 +673,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S16 · CBU Washed Commercial Designation",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/robusta-cbu.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -718,7 +718,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S18 · Natural Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/robusta-natural.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -763,7 +763,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S18 · Honey Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/robusta-honey.jpg",
         "gallery_images_json": "[]",
         "featured": 1,
         "created_at": "2026-11-17 08:14:49"
@@ -808,7 +808,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S18 · CBU Washed Commercial Designation",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/robusta-cbu.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -853,7 +853,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S14 · Natural Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/arabica-natural.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -898,7 +898,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S14 · Honey Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/arabica-honey.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -943,7 +943,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S14 · CBU Washed Commercial Designation",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/arabica-cbu.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -988,7 +988,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S16 · Natural Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/arabica-natural.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -1033,7 +1033,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S16 · Honey Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/arabica-honey.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -1078,7 +1078,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S16 · CBU Washed Commercial Designation",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/arabica-cbu.jpg",
         "gallery_images_json": "[]",
         "featured": 1,
         "created_at": "2026-11-17 08:14:49"
@@ -1123,7 +1123,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S18 · Natural Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/arabica-natural.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -1168,7 +1168,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S18 · Honey Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/arabica-honey.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -1213,7 +1213,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S18 · CBU Washed Commercial Designation",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/arabica-cbu.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -1258,7 +1258,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S14 · Natural Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/culi-natural.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -1303,7 +1303,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S14 · Honey Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/culi-honey.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -1348,7 +1348,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S14 · CBU Washed Commercial Designation",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/culi-cbu.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -1393,7 +1393,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S16 · Natural Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/culi-natural.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -1438,7 +1438,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S16 · Honey Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/culi-honey.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -1483,7 +1483,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S16 · CBU Washed Commercial Designation",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/culi-cbu.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -1528,7 +1528,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S18 · Natural Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/culi-natural.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -1573,7 +1573,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S18 · Honey Process",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/culi-honey.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -1618,7 +1618,7 @@
         "density": "Pending verified COA / Chờ đo tỷ trọng",
         "defect_info": "Pending verified COA / Chờ bảng kiểm lỗi",
         "grading_spec": "Screen S18 · CBU Washed Commercial Designation",
-        "image_key": "product_green_coffee_beans",
+        "image_key": "/assets/green-beans/culi-cbu.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -1663,7 +1663,7 @@
         "density": "N/A (Roasted Beans)",
         "defect_info": "< 0.5% lỗi hạt chín sau rang",
         "grading_spec": "RO-S18 · Sàng 18 sạch tạp chất · Rang mới 100%",
-        "image_key": "product_roasting_drum_clean",
+        "image_key": "/assets/roasted-beans/robusta-s18.jpg",
         "gallery_images_json": "[]",
         "featured": 1,
         "created_at": "2026-11-17 10:56:10"
@@ -1708,7 +1708,7 @@
         "density": "N/A (Roasted Beans)",
         "defect_info": "< 0.5% lỗi hạt chín sau rang",
         "grading_spec": "CU-S18 · Culi sàng 18 tuyển chọn · Không độn bơ bắp",
-        "image_key": "product_roasting_drum_clean",
+        "image_key": "/assets/roasted-beans/culi-s18.jpg",
         "gallery_images_json": "[]",
         "featured": 1,
         "created_at": "2026-11-17 10:56:10"
@@ -1753,7 +1753,7 @@
         "density": "N/A (Roasted Beans)",
         "defect_info": "< 0.5% lỗi hạt chín sau rang",
         "grading_spec": "AR-S18 · Arabica sàng 18 tuyển chọn cao nguyên",
-        "image_key": "product_roasting_drum_clean",
+        "image_key": "/assets/roasted-beans/arabica-s18.jpg",
         "gallery_images_json": "[]",
         "featured": 1,
         "created_at": "2026-11-17 10:56:10"
@@ -1798,7 +1798,7 @@
         "density": "N/A (Roasted Beans)",
         "defect_info": "< 0.5% lỗi hạt chín sau rang",
         "grading_spec": "AR-S18-CBU · Chế biến ướt sạch tiêu chuẩn HORECA & Specialty",
-        "image_key": "product_roasting_drum_clean",
+        "image_key": "/assets/roasted-beans/arabica-s18-cbu.jpg",
         "gallery_images_json": "[]",
         "featured": 1,
         "created_at": "2026-11-17 10:56:10"
@@ -1843,7 +1843,7 @@
         "density": "N/A (Roasted Beans)",
         "defect_info": "< 0.5% lỗi hạt chín sau rang",
         "grading_spec": "RO-S18-CBU · Fine Robusta chế biến ướt chuẩn pha máy",
-        "image_key": "product_roasting_drum_clean",
+        "image_key": "/assets/roasted-beans/robusta-s18-cbu.jpg",
         "gallery_images_json": "[]",
         "featured": 1,
         "created_at": "2026-11-17 10:56:10"
@@ -1888,7 +1888,7 @@
         "density": "N/A (Roasted Beans)",
         "defect_info": "< 0.5% lỗi hạt chín sau rang",
         "grading_spec": "RO-S18-HONEY · Chế biến mật ong 100% quả chín đỏ",
-        "image_key": "product_roasting_drum_clean",
+        "image_key": "/assets/roasted-beans/robusta-s18-honey.jpg",
         "gallery_images_json": "[]",
         "featured": 1,
         "created_at": "2026-11-17 10:56:10"

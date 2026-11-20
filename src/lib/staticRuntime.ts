@@ -722,7 +722,92 @@ export async function handleStaticApiFallback(
       return jsonResponse({ assets: snap?.tables?.media_assets || [] });
     }
     if (pathname === '/api/admin/team' && method === 'GET') {
-      return jsonResponse({ admins: [], nonAdmins: [], auditLogs: [] });
+      const admins = state.users
+        .filter((x) => x.role === 'admin')
+        .map((x) => ({
+          id: x.id,
+          email: x.email,
+          full_name: x.fullName,
+          phone: x.phone,
+          member_code: x.memberCode,
+          admin_role: x.adminRole || 'super_admin',
+          admin_permissions: x.adminPermissions || [...ALL_ADMIN_PERMISSIONS],
+          created_at: x.createdAt,
+        }));
+      const nonAdmins = state.users
+        .filter((x) => x.role !== 'admin')
+        .map((x) => ({
+          id: x.id,
+          email: x.email,
+          full_name: x.fullName,
+          phone: x.phone,
+          role: x.role,
+          member_code: x.memberCode,
+        }));
+      return jsonResponse({ admins, nonAdmins, auditLogs: [] });
+    }
+    if (pathname === '/api/admin/team' && method === 'POST') {
+      const mode = body.mode || (body.existingUserId ? 'promote' : 'create');
+      const adminRole = String(body.adminRole || 'editor');
+      const permissions = Array.isArray(body.permissions) ? body.permissions : [...ALL_ADMIN_PERMISSIONS];
+      if (mode === 'promote' && body.existingUserId) {
+        const target = state.users.find((x) => x.id === Number(body.existingUserId));
+        if (!target) return jsonResponse({ error: 'Không tìm thấy tài khoản.' }, 404);
+        target.role = 'admin';
+        target.adminRole = adminRole;
+        target.adminPermissions = permissions;
+        writeState(state);
+        return jsonResponse({ ok: true, id: target.id });
+      }
+      const email = String(body.email || '').trim().toLowerCase();
+      const fullName = String(body.fullName || '').trim();
+      const password = String(body.password || '');
+      const phone = String(body.phone || '').trim();
+      if (!email || !fullName || password.length < 6) {
+        return jsonResponse({ error: 'Vui lòng nhập đầy đủ họ tên, email và mật khẩu (≥6 ký tự).' }, 400);
+      }
+      if (state.users.some((x) => x.email.toLowerCase() === email)) {
+        return jsonResponse({ error: 'Email này đã tồn tại trong hệ thống.' }, 409);
+      }
+      const nextId = Math.max(10, ...state.users.map((x) => x.id)) + 1;
+      const newStaff: StaticUserRecord = {
+        id: nextId,
+        email,
+        password,
+        fullName,
+        phone,
+        role: 'admin',
+        adminRole,
+        adminPermissions: permissions,
+        memberCode: `RC-ADM-${String(nextId).padStart(4, '0')}`,
+        tier: 'ROAR Reserve',
+        emailVerified: true,
+        walletBalance: 0,
+        points: 0,
+        createdAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      };
+      state.users.push(newStaff);
+      writeState(state);
+      return jsonResponse({ ok: true, id: newStaff.id }, 201);
+    }
+    if (pathname.startsWith('/api/admin/team/') && method === 'PATCH') {
+      const id = Number(pathname.split('/').pop());
+      const target = state.users.find((x) => x.id === id);
+      if (!target) return jsonResponse({ error: 'Không tìm thấy nhân sự.' }, 404);
+      if (body.adminRole) target.adminRole = String(body.adminRole);
+      if (Array.isArray(body.permissions)) target.adminPermissions = body.permissions;
+      writeState(state);
+      return jsonResponse({ ok: true });
+    }
+    if (pathname.startsWith('/api/admin/team/') && method === 'DELETE') {
+      const id = Number(pathname.split('/').pop());
+      const target = state.users.find((x) => x.id === id);
+      if (!target) return jsonResponse({ error: 'Không tìm thấy nhân sự.' }, 404);
+      target.role = 'customer';
+      target.adminRole = undefined;
+      target.adminPermissions = undefined;
+      writeState(state);
+      return jsonResponse({ ok: true });
     }
     if (pathname === '/api/admin/wallets' && method === 'GET') {
       return jsonResponse({
