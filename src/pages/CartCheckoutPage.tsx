@@ -1,12 +1,32 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Banknote, Check, CheckCircle2, Copy, Minus, Plus, QrCode, ShieldCheck, Smartphone, Tag, Trash2, Wallet } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import {
+  Banknote,
+  Calendar,
+  Check,
+  CheckCircle2,
+  Clock,
+  Copy,
+  MapPin,
+  Minus,
+  Package,
+  Plus,
+  QrCode,
+  RefreshCw,
+  ShieldCheck,
+  Smartphone,
+  Tag,
+  Trash2,
+  Truck,
+  Wallet,
+} from 'lucide-react';
 import { MediaImage } from '../components/MediaImage';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { useI18n } from '../i18n/I18nContext';
 import { useStore } from '../context/StoreContext';
 import { localizeOrderStatus, localizeVariantLabel } from '../lib/i18nHelpers';
 import { calculateShippingFee } from '../lib/pricing';
+import { buildLiveShippingTracking, type LiveShippingTracking } from '../lib/shippingTracking';
 import { fetchPromotionsWithFallback } from '../lib/staticFallback';
 
 interface PaymentMethodOption {
@@ -1042,12 +1062,99 @@ export const CheckoutPage: React.FC = () => {
 
 export const OrderTrackPage: React.FC = () => {
   const { t, lang } = useI18n();
-  const { formatPrice } = useStore();
+  const { formatPrice, apiFetch, user } = useStore();
+  const [searchParams] = useSearchParams();
+
+  // Dedicated Section State: Real-Time Shipping Status & Estimated Arrival (Order ID + Email)
+  const [shippingOrderId, setShippingOrderId] = useState(() => searchParams.get('orderId') || searchParams.get('orderNumber') || '');
+  const [shippingEmail, setShippingEmail] = useState(() => searchParams.get('email') || user?.email || '');
+  const [liveShipping, setLiveShipping] = useState<LiveShippingTracking | null>(null);
+  const [liveOrderSummary, setLiveOrderSummary] = useState<any>(null);
+  const [shippingLoading, setShippingLoading] = useState(false);
+  const [shippingError, setShippingError] = useState('');
+
+  // General Invoice & Payment Lookup State
   const [lookupMode, setLookupMode] = useState<'orderNumber' | 'phone' | 'email'>('orderNumber');
   const [queryValue, setQueryValue] = useState('');
   const [orders, setOrders] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (user?.email && !shippingEmail) {
+      setShippingEmail(user.email);
+    }
+  }, [user?.email, shippingEmail]);
+
+  const fetchLiveShipping = useCallback(
+    async (orderIdInput: string, emailInput: string) => {
+      const cleanId = orderIdInput.trim().toUpperCase();
+      const cleanEmail = emailInput.trim().toLowerCase();
+      if (!cleanId || !cleanEmail) {
+        setShippingError(
+          t(
+            'Vui lòng nhập đầy đủ cả Mã đơn hàng (Order ID) và Email đặt hàng.',
+            'Please enter both your Order ID and order email address.'
+          )
+        );
+        return;
+      }
+      setShippingError('');
+      setShippingLoading(true);
+      try {
+        const res = await apiFetch(
+          `/api/orders/shipping-status?orderId=${encodeURIComponent(cleanId)}&email=${encodeURIComponent(cleanEmail)}`
+        );
+        const d = await res.json().catch(() => ({}));
+        if (res.ok && (d.shipping || d.order)) {
+          const shippingData: LiveShippingTracking =
+            d.shipping || d.order?.shipping_tracking || buildLiveShippingTracking(d.order);
+          setLiveShipping(shippingData);
+          setLiveOrderSummary(d.order || null);
+        } else {
+          setLiveShipping(null);
+          setLiveOrderSummary(null);
+          setShippingError(
+            d.error ||
+              t(
+                'Không tìm thấy đơn hàng khớp với Mã đơn hàng và Email đã nhập.',
+                'No matching shipment found for this Order ID and email address.'
+              )
+          );
+        }
+      } catch {
+        setLiveShipping(null);
+        setLiveOrderSummary(null);
+        setShippingError(t('Không thể kết nối máy chủ để cập nhật vận chuyển.', 'Unable to connect to shipping service.'));
+      } finally {
+        setShippingLoading(false);
+      }
+    },
+    [apiFetch, t]
+  );
+
+  const handleShippingSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchLiveShipping(shippingOrderId, shippingEmail);
+  };
+
+  // Optional auto-refresh every 30s while an active (in-progress) shipment is displayed
+  useEffect(() => {
+    if (!liveShipping) return;
+    if (
+      liveShipping.shippingStatusCode === 'delivered' ||
+      liveShipping.shippingStatusCode === 'cancelled' ||
+      liveShipping.shippingStatusCode === 'returned'
+    ) {
+      return;
+    }
+    const timer = window.setInterval(() => {
+      if (shippingOrderId.trim() && shippingEmail.trim()) {
+        fetchLiveShipping(shippingOrderId, shippingEmail);
+      }
+    }, 30000);
+    return () => window.clearInterval(timer);
+  }, [liveShipping, shippingOrderId, shippingEmail, fetchLiveShipping]);
 
   const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1061,8 +1168,8 @@ export const OrderTrackPage: React.FC = () => {
     try {
       const paramKey =
         lookupMode === 'orderNumber' ? 'orderNumber' : lookupMode === 'phone' ? 'phone' : 'email';
-      const res = await fetch(`/api/orders/track?${paramKey}=${encodeURIComponent(trimmed)}`);
-      const d = await res.json();
+      const res = await apiFetch(`/api/orders/track?${paramKey}=${encodeURIComponent(trimmed)}`);
+      const d = await res.json().catch(() => ({}));
       if (res.ok) {
         const list = Array.isArray(d.orders) ? d.orders : d.order ? [d.order] : [];
         setOrders(list);
@@ -1082,120 +1189,393 @@ export const OrderTrackPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[820px] mx-auto px-6 py-14 space-y-8">
+    <div className="max-w-[920px] mx-auto px-6 py-12 space-y-10">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-[#202020] dark:text-[#F1EFEA]">{t('Tra cứu Đơn hàng', 'Track Your Order')}</h1>
-        <p className="text-sm text-[#202020]/70 dark:text-[#F1EFEA]/70">
-          {t(
-            'Chọn 1 trong 3 điều kiện bên dưới để tra cứu nhanh tình trạng đơn hàng của bạn: Mã đơn hàng, Số điện thoại hoặc Email.',
-            'Choose any 1 of 3 conditions to track your order: Order Number, Phone Number, or Email.'
-          )}
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#00552B] dark:text-[#C6A667]">
+          {t('Cổng Vận chuyển & Đơn hàng ROAR COFFEE', 'ROAR COFFEE Order & Logistics Center')}
         </p>
+        <h1 className="text-3xl font-bold text-[#202020] dark:text-[#F1EFEA]">
+          {t('Tra cứu Đơn hàng & Vận chuyển', 'Track Order & Shipping Status')}
+        </h1>
       </div>
 
-      <form onSubmit={handleTrack} className="bg-white dark:bg-[#16221C] rounded-xl border border-[#202020]/10 dark:border-white/10 p-6 space-y-4 text-sm">
-        <div className="grid grid-cols-3 gap-2 p-1 rounded-lg bg-[#F8F5EF] dark:bg-[#0E1512]">
-          {[
-            { id: 'orderNumber', vi: '1. Mã đơn hàng', en: '1. Order Number' },
-            { id: 'phone', vi: '2. Số điện thoại', en: '2. Phone Number' },
-            { id: 'email', vi: '3. Email đặt hàng', en: '3. Email Address' },
-          ].map((m) => (
+      {/* DEDICATED SECTION: REAL-TIME SHIPPING STATUS & ESTIMATED ARRIVAL (ORDER ID + EMAIL) */}
+      <section
+        aria-labelledby="live-shipping-heading"
+        className="rounded-2xl border border-[#00552B]/25 dark:border-[#C6A667]/30 bg-white dark:bg-[#16221C] overflow-hidden shadow-xs"
+      >
+        <div className="bg-[#003D25] text-[#F8F5EF] px-6 py-5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.16em] text-[#C6A667]">
+              <Truck className="w-3.5 h-3.5" />
+              <span>{t('Kiểm tra Vận chuyển Trực tiếp', 'Real-Time Shipping & ETA Tracker')}</span>
+            </div>
+            <h2 id="live-shipping-heading" className="text-xl font-bold text-white">
+              {t('Trạng thái Giao hàng & Ngày nhận Dự kiến', 'Live Shipping Status & Estimated Arrival Date')}
+            </h2>
+            <p className="text-xs text-[#F8F5EF]/80">
+              {t(
+                'Nhập Mã đơn hàng (Order ID) và Email đặt hàng để xem tiến độ vận chuyển theo thời gian thực và ngày giao dự kiến.',
+                'Enter your Order ID and order email address to fetch live shipping status and estimated arrival date.'
+              )}
+            </p>
+          </div>
+          {liveShipping && (
             <button
-              key={m.id}
               type="button"
-              onClick={() => {
-                setLookupMode(m.id as 'orderNumber' | 'phone' | 'email');
-                setError('');
-              }}
-              className={`py-2 px-2.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-                lookupMode === m.id
-                  ? 'bg-[#00552B] text-white'
-                  : 'text-[#202020]/75 dark:text-[#F1EFEA]/75 hover:text-[#202020] dark:hover:text-white'
-              }`}
+              onClick={() => fetchLiveShipping(shippingOrderId, shippingEmail)}
+              disabled={shippingLoading}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#C6A667] hover:bg-[#d4b67a] text-[#111111] text-xs font-bold shrink-0 cursor-pointer disabled:opacity-60 transition-colors"
             >
-              {t(m.vi, m.en)}
+              <RefreshCw className={`w-3.5 h-3.5 ${shippingLoading ? 'animate-spin' : ''}`} />
+              <span>{t('Cập nhật trạng thái', 'Refresh Status')}</span>
             </button>
-          ))}
+          )}
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3">
-          <input
-            type={lookupMode === 'email' ? 'email' : lookupMode === 'phone' ? 'tel' : 'text'}
-            required
-            value={queryValue}
-            onChange={(e) => setQueryValue(e.target.value)}
-            placeholder={
-              lookupMode === 'orderNumber'
-                ? t('Nhập mã đơn hàng (vd: RC-20261101-1001)', 'Enter Order Number (e.g. RC-20261101-1001)')
-                : lookupMode === 'phone'
-                  ? t('Nhập số điện thoại đặt hàng (vd: 0901234567)', 'Enter Phone Number (e.g. +84 901 234 567)')
-                  : t('Nhập email đặt hàng (vd: member@roarcoffee.vn)', 'Enter Email Address (e.g. member@roarcoffee.vn)')
-            }
-            className="flex-1 bg-white dark:bg-[#0E1512] border border-[#202020]/15 dark:border-white/15 rounded px-3.5 py-2.5 font-mono"
-          />
-          <button
-            type="submit"
-            disabled={searching}
-            className="bg-[#00552B] text-white font-semibold rounded px-6 py-2.5 hover:bg-[#003D25] cursor-pointer disabled:opacity-50"
-          >
-            {searching ? t('Đang tra cứu...', 'Searching...') : t('Tra cứu đơn', 'Track Order')}
-          </button>
-        </div>
-      </form>
+        <div className="p-6 space-y-6">
+          <form onSubmit={handleShippingSubmit} className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+              <div className="md:col-span-5">
+                <label htmlFor="live-order-id" className="block text-xs font-semibold text-[#202020]/75 dark:text-[#F1EFEA]/75 mb-1.5">
+                  {t('Mã đơn hàng (Order ID) *', 'Order ID *')}
+                </label>
+                <input
+                  id="live-order-id"
+                  type="text"
+                  required
+                  value={shippingOrderId}
+                  onChange={(e) => setShippingOrderId(e.target.value)}
+                  placeholder="RC-20261114-1892"
+                  className="w-full bg-[#F8F5EF] dark:bg-[#0E1512] border border-[#202020]/15 dark:border-white/15 rounded-lg px-3.5 py-2.5 text-sm font-mono text-[#202020] dark:text-[#F1EFEA] focus:outline-none focus:border-[#00552B] dark:focus:border-[#C6A667]"
+                />
+              </div>
 
-      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+              <div className="md:col-span-5">
+                <label htmlFor="live-order-email" className="block text-xs font-semibold text-[#202020]/75 dark:text-[#F1EFEA]/75 mb-1.5">
+                  {t('Email đặt hàng *', 'Order Email *')}
+                </label>
+                <input
+                  id="live-order-email"
+                  type="email"
+                  required
+                  value={shippingEmail}
+                  onChange={(e) => setShippingEmail(e.target.value)}
+                  placeholder="member@roarcoffee.vn"
+                  className="w-full bg-[#F8F5EF] dark:bg-[#0E1512] border border-[#202020]/15 dark:border-white/15 rounded-lg px-3.5 py-2.5 text-sm text-[#202020] dark:text-[#F1EFEA] focus:outline-none focus:border-[#00552B] dark:focus:border-[#C6A667]"
+                />
+              </div>
 
-      {orders.length > 0 && (
-        <div className="space-y-6">
-          <p className="text-xs font-semibold text-[#00552B] dark:text-[#C6A667]">
-            {t(`Tìm thấy ${orders.length} đơn hàng phù hợp:`, `Found ${orders.length} matching order(s):`)}
-          </p>
-          {orders.map((order) => (
-            <div key={order.id || order.order_number} className="bg-white dark:bg-[#16221C] rounded-xl border border-[#202020]/10 dark:border-white/10 p-6 space-y-5">
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#202020]/10 dark:border-white/10">
-                <div>
-                  <span className="font-mono font-bold text-[#00552B] dark:text-[#C6A667]">{order.order_number}</span>
-                  <p className="text-xs text-[#202020]/60 dark:text-[#F1EFEA]/60">
-                    {order.customer_name} · {order.customer_phone} · {order.created_at}
+              <div className="md:col-span-2">
+                <button
+                  type="submit"
+                  disabled={shippingLoading}
+                  className="w-full py-2.5 px-4 bg-[#00552B] hover:bg-[#003D25] text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                >
+                  {shippingLoading ? t('Đang tải...', 'Fetching...') : t('Kiểm tra', 'Check ETA')}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#202020]/60 dark:text-[#F1EFEA]/60">
+              <span>{t('Mã mẫu tra cứu nhanh:', 'Quick sample orders:')}</span>
+              {[
+                { id: 'RC-20261114-1892', email: 'member@roarcoffee.vn', tagVi: 'Đang giao', tagEn: 'Shipping' },
+                { id: 'RC-20261115-2048', email: 'member@roarcoffee.vn', tagVi: 'Chờ xác nhận', tagEn: 'Pending' },
+                { id: 'RC-20261101-1001', email: 'member@roarcoffee.vn', tagVi: 'Đã giao', tagEn: 'Completed' },
+              ].map((sample) => (
+                <button
+                  key={sample.id}
+                  type="button"
+                  onClick={() => {
+                    setShippingOrderId(sample.id);
+                    setShippingEmail(sample.email);
+                    fetchLiveShipping(sample.id, sample.email);
+                  }}
+                  className="px-2 py-0.5 rounded bg-[#F8F5EF] dark:bg-[#0E1512] border border-[#202020]/15 dark:border-white/15 hover:border-[#00552B] dark:hover:border-[#C6A667] font-mono text-[#00552B] dark:text-[#C6A667] cursor-pointer transition-colors"
+                >
+                  {sample.id} ({t(sample.tagVi, sample.tagEn)})
+                </button>
+              ))}
+            </div>
+          </form>
+
+          {shippingError && (
+            <div role="alert" className="p-3.5 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-xs font-medium text-red-700 dark:text-red-300">
+              {shippingError}
+            </div>
+          )}
+
+          {liveShipping && (
+            <div className="space-y-6 pt-2 border-t border-[#202020]/10 dark:border-white/10">
+              {/* Top 3 Live Shipping Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* 1. Live Shipping Status */}
+                <div className="rounded-xl bg-[#F8F5EF] dark:bg-[#0E1512] border border-[#202020]/10 dark:border-white/10 p-4 space-y-1.5">
+                  <div className="flex items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-wider text-[#202020]/60 dark:text-[#F1EFEA]/60">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Package className="w-3.5 h-3.5 text-[#00552B] dark:text-[#C6A667]" />
+                      {t('Trạng thái giao vận', 'Shipping Status')}
+                    </span>
+                    <span className="font-mono text-[#00552B] dark:text-[#C6A667]">
+                      {localizeOrderStatus(liveShipping.orderStatus, lang)}
+                    </span>
+                  </div>
+                  <p className="text-sm font-bold text-[#202020] dark:text-[#F1EFEA]">
+                    {lang === 'vi' ? liveShipping.shippingStatusVi : liveShipping.shippingStatusEn}
+                  </p>
+                  <p className="text-[11px] font-mono text-[#202020]/65 dark:text-[#F1EFEA]/65">
+                    {liveShipping.carrierName} · {liveShipping.trackingCode}
                   </p>
                 </div>
-                <div className="text-right text-xs">
-                  <span className="font-semibold text-[#202020] dark:text-[#F1EFEA] block">
-                    {t('Trạng thái:', 'Status:')} {localizeOrderStatus(order.order_status, lang)}
-                  </span>
-                  {order.tracking_code && (
-                    <span className="font-mono text-[#00552B] dark:text-[#C6A667]">
-                      {t('Mã vận đơn:', 'Tracking:')} {order.tracking_code}
+
+                {/* 2. Estimated Arrival Date */}
+                <div className="rounded-xl bg-[#00552B]/8 dark:bg-[#C6A667]/12 border border-[#00552B]/25 dark:border-[#C6A667]/35 p-4 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#00552B] dark:text-[#C6A667]">
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>{t('Ngày nhận dự kiến', 'Estimated Arrival Date')}</span>
+                  </div>
+                  <p className="text-lg font-bold font-mono text-[#00552B] dark:text-[#C6A667] tabular-nums">
+                    {liveShipping.estimatedArrivalDate || t('Không áp dụng', 'N/A')}
+                  </p>
+                  <p className="text-[11px] text-[#202020]/75 dark:text-[#F1EFEA]/75">
+                    {lang === 'vi' ? liveShipping.estimatedArrivalDisplayVi : liveShipping.estimatedArrivalDisplayEn}
+                  </p>
+                </div>
+
+                {/* 3. Current Hub / Checkpoint */}
+                <div className="rounded-xl bg-[#F8F5EF] dark:bg-[#0E1512] border border-[#202020]/10 dark:border-white/10 p-4 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#202020]/60 dark:text-[#F1EFEA]/60">
+                    <MapPin className="w-3.5 h-3.5 text-[#00552B] dark:text-[#C6A667]" />
+                    <span>{t('Vị trí & Cập nhật', 'Current Checkpoint')}</span>
+                  </div>
+                  <p className="text-xs font-semibold text-[#202020] dark:text-[#F1EFEA] line-clamp-2">
+                    {lang === 'vi' ? liveShipping.currentLocationVi : liveShipping.currentLocationEn}
+                  </p>
+                  <p className="text-[11px] text-[#202020]/60 dark:text-[#F1EFEA]/60 inline-flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    <span>
+                      {t('Đồng bộ lúc:', 'Synced:')} {new Date(liveShipping.syncedAt).toLocaleTimeString(lang === 'vi' ? 'vi-VN' : 'en-US')}
                     </span>
-                  )}
+                  </p>
                 </div>
               </div>
-              <div className="space-y-2 text-sm">
-                {(order.items || []).map((it: any) => (
-                  <div key={it.id} className="flex justify-between gap-3">
-                    <span>
-                      {lang === 'vi' ? it.product_name_vi : it.product_name_en} ({localizeVariantLabel(it.variant_label, lang)}) × {it.quantity}
-                    </span>
-                    <span className="font-mono tabular-nums shrink-0">{formatPrice(it.line_total_vnd)}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="flex justify-between font-bold pt-3 border-t border-[#202020]/10 dark:border-white/10">
-                <span>{t('Tổng đơn', 'Total')}</span>
-                <span className="tabular-nums">{formatPrice(order.total)}</span>
+
+              {/* Progress Bar & Fulfillment Timeline */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-[#202020] dark:text-[#F1EFEA]">
+                    {t('Tiến trình xử lý & vận chuyển', 'Fulfillment & Transit Progress')}
+                  </span>
+                  <span className="font-mono font-bold text-[#00552B] dark:text-[#C6A667] tabular-nums">
+                    {liveShipping.progressPercent}%
+                  </span>
+                </div>
+
+                <div className="w-full h-2.5 rounded-full bg-[#202020]/10 dark:bg-white/10 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      liveShipping.shippingStatusCode === 'cancelled' || liveShipping.shippingStatusCode === 'returned'
+                        ? 'bg-red-500'
+                        : 'bg-gradient-to-r from-[#00552B] to-[#C6A667]'
+                    }`}
+                    style={{ width: `${liveShipping.progressPercent}%` }}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-1">
+                  {liveShipping.timeline.map((step) => (
+                    <div
+                      key={step.key}
+                      className={`rounded-xl border p-3.5 space-y-1.5 transition-colors ${
+                        step.active
+                          ? 'border-[#00552B] dark:border-[#C6A667] bg-[#00552B]/6 dark:bg-[#C6A667]/12'
+                          : step.completed
+                            ? 'border-[#00552B]/25 dark:border-white/15 bg-[#F8F5EF] dark:bg-[#0E1512]'
+                            : 'border-[#202020]/10 dark:border-white/10 opacity-55'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span
+                          className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                            step.completed || step.active
+                              ? 'bg-[#00552B] text-white dark:bg-[#C6A667] dark:text-[#111111]'
+                              : 'bg-[#202020]/15 dark:bg-white/15 text-[#202020]/70 dark:text-[#F1EFEA]/70'
+                          }`}
+                        >
+                          {step.completed ? <Check className="w-3 h-3" /> : '·'}
+                        </span>
+                        {step.timestamp && (
+                          <span className="text-[10px] font-mono text-[#202020]/55 dark:text-[#F1EFEA]/55">
+                            {step.timestamp}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs font-bold text-[#202020] dark:text-[#F1EFEA]">
+                        {lang === 'vi' ? step.labelVi : step.labelEn}
+                      </p>
+                      <p className="text-[11px] text-[#202020]/65 dark:text-[#F1EFEA]/65 leading-snug">
+                        {lang === 'vi' ? step.descVi : step.descEn}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <PaymentQRPanel
-                orderNumber={order.order_number}
-                customerEmail={order.customer_email}
-                paymentMethod={order.payment_method}
-                totalVnd={order.total}
-                initialPaymentStatus={order.payment_status}
-              />
+              {/* Order Recipient & Summary Line */}
+              {liveOrderSummary && (
+                <div className="rounded-lg bg-[#F8F5EF] dark:bg-[#0E1512] border border-[#202020]/10 dark:border-white/10 p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div className="space-y-0.5">
+                    <p className="font-semibold text-[#202020] dark:text-[#F1EFEA]">
+                      {liveOrderSummary.order_number} · {liveOrderSummary.customer_name} ({liveOrderSummary.customer_email})
+                    </p>
+                    <p className="text-[#202020]/65 dark:text-[#F1EFEA]/65">
+                      {t('Địa chỉ giao:', 'Destination:')} {liveOrderSummary.shipping_address}
+                    </p>
+                  </div>
+                  <div className="text-right font-mono">
+                    <span className="font-bold text-[#00552B] dark:text-[#C6A667] block tabular-nums">
+                      {formatPrice(liveOrderSummary.total)}
+                    </span>
+                    {Array.isArray(liveOrderSummary.items) && (
+                      <span className="text-[11px] text-[#202020]/60 dark:text-[#F1EFEA]/60">
+                        {liveOrderSummary.items.length} {t('dòng sản phẩm', 'item(s)')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
-          ))}
+          )}
         </div>
-      )}
+      </section>
+
+      {/* EXISTING GENERAL ORDER & PAYMENT LOOKUP */}
+      <section className="space-y-6">
+        <div className="space-y-1">
+          <h2 className="text-xl font-bold text-[#202020] dark:text-[#F1EFEA]">
+            {t('Tra cứu Chi tiết Hóa đơn & Thanh toán', 'Full Order & Payment Lookup')}
+          </h2>
+          <p className="text-sm text-[#202020]/70 dark:text-[#F1EFEA]/70">
+            {t(
+              'Hoặc chọn 1 trong 3 điều kiện bên dưới để tra cứu nhanh hóa đơn và mã thanh toán QR của đơn hàng.',
+              'Or choose any 1 of 3 conditions below to view full order items and QR payment details.'
+            )}
+          </p>
+        </div>
+
+        <form onSubmit={handleTrack} className="bg-white dark:bg-[#16221C] rounded-xl border border-[#202020]/10 dark:border-white/10 p-6 space-y-4 text-sm">
+          <div className="grid grid-cols-3 gap-2 p-1 rounded-lg bg-[#F8F5EF] dark:bg-[#0E1512]">
+            {[
+              { id: 'orderNumber', vi: '1. Mã đơn hàng', en: '1. Order Number' },
+              { id: 'phone', vi: '2. Số điện thoại', en: '2. Phone Number' },
+              { id: 'email', vi: '3. Email đặt hàng', en: '3. Email Address' },
+            ].map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => {
+                  setLookupMode(m.id as 'orderNumber' | 'phone' | 'email');
+                  setError('');
+                }}
+                className={`py-2 px-2.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
+                  lookupMode === m.id
+                    ? 'bg-[#00552B] text-white'
+                    : 'text-[#202020]/75 dark:text-[#F1EFEA]/75 hover:text-[#202020] dark:hover:text-white'
+                }`}
+              >
+                {t(m.vi, m.en)}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type={lookupMode === 'email' ? 'email' : lookupMode === 'phone' ? 'tel' : 'text'}
+              required
+              value={queryValue}
+              onChange={(e) => setQueryValue(e.target.value)}
+              placeholder={
+                lookupMode === 'orderNumber'
+                  ? t('Nhập mã đơn hàng (vd: RC-20261101-1001)', 'Enter Order Number (e.g. RC-20261101-1001)')
+                  : lookupMode === 'phone'
+                    ? t('Nhập số điện thoại đặt hàng (vd: 0901234567)', 'Enter Phone Number (e.g. +84 901 234 567)')
+                    : t('Nhập email đặt hàng (vd: member@roarcoffee.vn)', 'Enter Email Address (e.g. member@roarcoffee.vn)')
+              }
+              className="flex-1 bg-white dark:bg-[#0E1512] border border-[#202020]/15 dark:border-white/15 rounded px-3.5 py-2.5 font-mono"
+            />
+            <button
+              type="submit"
+              disabled={searching}
+              className="bg-[#00552B] text-white font-semibold rounded px-6 py-2.5 hover:bg-[#003D25] cursor-pointer disabled:opacity-50"
+            >
+              {searching ? t('Đang tra cứu...', 'Searching...') : t('Tra cứu đơn', 'Track Order')}
+            </button>
+          </div>
+        </form>
+
+        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+
+        {orders.length > 0 && (
+          <div className="space-y-6">
+            <p className="text-xs font-semibold text-[#00552B] dark:text-[#C6A667]">
+              {t(`Tìm thấy ${orders.length} đơn hàng phù hợp:`, `Found ${orders.length} matching order(s):`)}
+            </p>
+            {orders.map((order) => {
+              const shipInfo: LiveShippingTracking | null = order.shipping_tracking || null;
+              return (
+                <div key={order.id || order.order_number} className="bg-white dark:bg-[#16221C] rounded-xl border border-[#202020]/10 dark:border-white/10 p-6 space-y-5">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#202020]/10 dark:border-white/10">
+                    <div>
+                      <span className="font-mono font-bold text-[#00552B] dark:text-[#C6A667]">{order.order_number}</span>
+                      <p className="text-xs text-[#202020]/60 dark:text-[#F1EFEA]/60">
+                        {order.customer_name} · {order.customer_phone} · {order.created_at}
+                      </p>
+                    </div>
+                    <div className="text-right text-xs">
+                      <span className="font-semibold text-[#202020] dark:text-[#F1EFEA] block">
+                        {t('Trạng thái:', 'Status:')} {localizeOrderStatus(order.order_status, lang)}
+                      </span>
+                      {order.tracking_code && (
+                        <span className="font-mono text-[#00552B] dark:text-[#C6A667] block">
+                          {t('Mã vận đơn:', 'Tracking:')} {order.tracking_code}
+                        </span>
+                      )}
+                      {shipInfo?.estimatedArrivalDate && (
+                        <span className="text-[11px] text-[#00552B] dark:text-[#C6A667] font-mono block">
+                          {lang === 'vi' ? shipInfo.estimatedArrivalDisplayVi : shipInfo.estimatedArrivalDisplayEn}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    {(order.items || []).map((it: any) => (
+                      <div key={it.id} className="flex justify-between gap-3">
+                        <span>
+                          {lang === 'vi' ? it.product_name_vi : it.product_name_en} ({localizeVariantLabel(it.variant_label, lang)}) × {it.quantity}
+                        </span>
+                        <span className="font-mono tabular-nums shrink-0">{formatPrice(it.line_total_vnd)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between font-bold pt-3 border-t border-[#202020]/10 dark:border-white/10">
+                    <span>{t('Tổng đơn', 'Total')}</span>
+                    <span className="tabular-nums">{formatPrice(order.total)}</span>
+                  </div>
+
+                  <PaymentQRPanel
+                    orderNumber={order.order_number}
+                    customerEmail={order.customer_email}
+                    paymentMethod={order.payment_method}
+                    totalVnd={order.total}
+                    initialPaymentStatus={order.payment_status}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </div>
   );
 };

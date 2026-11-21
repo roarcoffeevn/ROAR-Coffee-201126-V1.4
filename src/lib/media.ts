@@ -16,6 +16,15 @@ import mascotEagle from '../assets/images/mascot_eagle_1794800576333.jpg';
 import mascotWolf from '../assets/images/mascot_wolf_1794800576147.jpg';
 import mascotOwl from '../assets/images/mascot_owl_1794800576592.jpg';
 import mascotPanther from '../assets/images/mascot_panther_1794800577200.jpg';
+import journalCbuWashed from '../assets/images/journal_cbu_washed_1795239116964.jpg';
+import journalCuliPeaberry from '../assets/images/journal_culi_peaberry_1795239118032.jpg';
+import journalPhinEspresso from '../assets/images/journal_phin_espresso_1795239117549.jpg';
+import journalPhinRitual from '../assets/images/journal_phin_ritual_1795239117098.jpg';
+import journalCaudatArabica from '../assets/images/journal_caudat_arabica_1795239116769.jpg';
+import journalCoffeeProcesses from '../assets/images/journal_coffee_processes_1795239116815.jpg';
+import journalS18Roastery from '../assets/images/journal_s18_roastery_1795239117151.jpg';
+import journalTastingArchetypes from '../assets/images/journal_tasting_archetypes_1795239116993.jpg';
+import journalColdbrewGifting from '../assets/images/journal_coldbrew_gifting_1795239117775.jpg';
 
 export const OFFICIAL_LOGOS = {
   horizontal: '/assets/aistudio/ROAR_COFFEE_Logo_Ngang_1_Mau_e2b7f050.png',
@@ -41,6 +50,15 @@ export const MEDIA_ASSETS: Record<string, string> = {
   mascot_wolf: mascotWolf,
   mascot_owl: mascotOwl,
   mascot_panther: mascotPanther,
+  journal_cbu_washed: journalCbuWashed,
+  journal_culi_peaberry: journalCuliPeaberry,
+  journal_phin_espresso: journalPhinEspresso,
+  journal_phin_ritual: journalPhinRitual,
+  journal_caudat_arabica: journalCaudatArabica,
+  journal_coffee_processes: journalCoffeeProcesses,
+  journal_s18_roastery: journalS18Roastery,
+  journal_tasting_archetypes: journalTastingArchetypes,
+  journal_coldbrew_gifting: journalColdbrewGifting,
 };
 
 export interface BuiltinMediaItem {
@@ -70,7 +88,37 @@ export const BUILTIN_MEDIA_ITEMS: BuiltinMediaItem[] = [
   { key: 'mascot_wolf', labelVi: 'Linh vật Sói (Tương lai)', labelEn: 'Mascot Wolf', category: 'Linh vật', url: mascotWolf },
   { key: 'mascot_owl', labelVi: 'Linh vật Cú Mèo (Tương lai)', labelEn: 'Mascot Owl', category: 'Linh vật', url: mascotOwl },
   { key: 'mascot_panther', labelVi: 'Linh vật Báo Đen (Reserve)', labelEn: 'Mascot Black Panther', category: 'Linh vật', url: mascotPanther },
+  { key: '/assets/instant/instant-silver.jpg', labelVi: 'Cà phê Hòa tan Silver Collection', labelEn: 'Instant Silver Collection', category: 'Sản phẩm', url: '/assets/instant/instant-silver.jpg' },
+  { key: '/assets/instant/instant-gold.jpg', labelVi: 'Cà phê Hòa tan Gold Collection', labelEn: 'Instant Gold Collection', category: 'Sản phẩm', url: '/assets/instant/instant-gold.jpg' },
+  { key: '/assets/vouchers/gift-voucher-50k.jpg', labelVi: 'Thẻ Quà Tặng Gift Voucher 50.000₫', labelEn: 'Gift Voucher 50,000 VND', category: 'Voucher', url: '/assets/vouchers/gift-voucher-50k.jpg' },
+  { key: '/assets/vouchers/gift-voucher-100k.jpg', labelVi: 'Thẻ Quà Tặng Gift Voucher 100.000₫', labelEn: 'Gift Voucher 100,000 VND', category: 'Voucher', url: '/assets/vouchers/gift-voucher-100k.jpg' },
+  { key: '/assets/vouchers/gift-voucher-500k.jpg', labelVi: 'Thẻ Quà Tặng Gift Voucher 500.000₫', labelEn: 'Gift Voucher 500,000 VND', category: 'Voucher', url: '/assets/vouchers/gift-voucher-500k.jpg' },
+  { key: '/assets/vouchers/gift-voucher-1m.jpg', labelVi: 'Thẻ Quà Tặng VIP Voucher 1.000.000₫', labelEn: 'VIP Gift Voucher 1,000,000 VND', category: 'Voucher', url: '/assets/vouchers/gift-voucher-1m.jpg' },
+  { key: '/assets/vouchers/promo-member.jpg', labelVi: 'Thẻ Ưu đãi Thành viên ROAR', labelEn: 'Member Privilege Voucher', category: 'Voucher', url: '/assets/vouchers/promo-member.jpg' },
+  { key: '/assets/vouchers/promo-freeship.jpg', labelVi: 'Thẻ Ưu đãi Miễn phí Vận chuyển', labelEn: 'VIP Dispatch Free Shipping Voucher', category: 'Voucher', url: '/assets/vouchers/promo-freeship.jpg' },
+  { key: '/assets/vouchers/promo-reserve.jpg', labelVi: 'Thẻ Ưu đãi Reserve & Doanh nghiệp', labelEn: 'Reserve & Corporate Voucher', category: 'Voucher', url: '/assets/vouchers/promo-reserve.jpg' },
+  { key: 'journal_cbu_washed', labelVi: 'Tạp chí: Quy trình chế biến ướt CBU', labelEn: 'Journal: CBU Washed Processing', category: 'Tạp chí', url: journalCbuWashed },
+  { key: 'journal_culi_peaberry', labelVi: 'Tạp chí: Hình thái hạt Culi (Peaberry)', labelEn: 'Journal: Culi Peaberry Morphology', category: 'Tạp chí', url: journalCuliPeaberry },
+  { key: 'journal_phin_espresso', labelVi: 'Tạp chí: Phin Việt Nam & Espresso', labelEn: 'Journal: Phin Meets Espresso', category: 'Tạp chí', url: journalPhinEspresso },
+  { key: 'journal_phin_ritual', labelVi: 'Tạp chí: Nghệ thuật pha Phin ROAR', labelEn: 'Journal: Vietnamese Phin Ritual', category: 'Tạp chí', url: journalPhinRitual },
+  { key: 'journal_caudat_arabica', labelVi: 'Tạp chí: Arabica Cầu Đất 1.500m', labelEn: 'Journal: Cau Dat Highland Arabica', category: 'Tạp chí', url: journalCaudatArabica },
+  { key: 'journal_coffee_processes', labelVi: 'Tạp chí: Phân biệt Natural, Honey & CBU', labelEn: 'Journal: Natural vs Honey vs CBU', category: 'Tạp chí', url: journalCoffeeProcesses },
+  { key: 'journal_s18_roastery', labelVi: 'Tạp chí: Rang hạt S18 cho quán Espresso', labelEn: 'Journal: S18 Roastery & Espresso Bar', category: 'Tạp chí', url: journalS18Roastery },
+  { key: 'journal_tasting_archetypes', labelVi: 'Tạp chí: 7 Cá tính & Gu thưởng thức', labelEn: 'Journal: 7 Personalities Tasting Flight', category: 'Tạp chí', url: journalTastingArchetypes },
+  { key: 'journal_coldbrew_gifting', labelVi: 'Tạp chí: Cold Brew 16h & Quà tặng Cao cấp', labelEn: 'Journal: Cold Brew & Executive Gifting', category: 'Tạp chí', url: journalColdbrewGifting },
 ];
+
+export function getPromoVoucherImage(promo?: { code?: string; discount_type?: string } | null): string {
+  const code = String(promo?.code || '').toUpperCase();
+  const type = String(promo?.discount_type || '').toLowerCase();
+  if (type === 'free_shipping' || code.includes('FREESHIP') || code.includes('SHIP')) {
+    return '/assets/vouchers/promo-freeship.jpg';
+  }
+  if (code.includes('RESERVE') || code.includes('DOANHGIA') || code.includes('ESPRESSO') || code.includes('GOLD') || code.includes('HOATAN')) {
+    return '/assets/vouchers/promo-reserve.jpg';
+  }
+  return '/assets/vouchers/promo-member.jpg';
+}
 
 export function resolveMediaUrl(keyOrUrl?: string, fallbackKey = 'product_robusta_house'): string {
   if (!keyOrUrl) return MEDIA_ASSETS[fallbackKey] || heroRoarCoffee;
@@ -203,9 +251,18 @@ export function getDefaultAdditionalGallerySlides(product: {
     ];
   }
 
+  if (product.slug.startsWith('gift-voucher-')) {
+    return [
+      { imageKey: '/assets/vouchers/promo-reserve.jpg', captionVi: 'Phiên bản Thẻ cứng ép kim vàng & phong bì quà tặng cao cấp', captionEn: 'Champagne-gold foil physical gift card & presentation sleeve' },
+      { imageKey: '/assets/vouchers/promo-member.jpg', captionVi: 'Áp dụng thanh toán trực tiếp hoặc quy đổi tại ROAR COFFEE®', captionEn: 'Redeemable directly at checkout or across ROAR COFFEE® collections' },
+      { imageKey: '/assets/roasted-ground/signature-reserve.jpg', captionVi: 'Áp dụng cho mọi dòng Signature Reserve, Rang xay & Hạt rang', captionEn: 'Valid for Signature Reserve, Roasted Ground & Whole Beans' },
+    ];
+  }
+
   if (product.category === 'instant') {
     return [
-      { imageKey: 'hero_roar_coffee', captionVi: 'Hương vị cà phê Việt đậm đà tiện lợi mỗi ngày', captionEn: 'Rich Vietnamese coffee character, effortless preparation' },
+      { imageKey: '/assets/instant/instant-silver.jpg', captionVi: 'Bộ sưu tập Hòa tan Silver — Sắc xanh rừng & nhũ bạc tinh tế', captionEn: 'Instant Silver Collection — Forest green with brushed silver foil' },
+      { imageKey: '/assets/instant/instant-gold.jpg', captionVi: 'Bộ sưu tập Hòa tan Gold — Phiên bản cao cấp ánh vàng Champagne', captionEn: 'Instant Gold Collection — Luxury Champagne Gold edition' },
       { imageKey: 'product_brewing_ritual', captionVi: 'Cảm hứng tách cà phê sáng chuẩn gu Việt', captionEn: 'Inspired by authentic morning coffee rituals' },
       { imageKey: 'origin_central_highlands', captionVi: 'Nguồn hạt tuyển chọn từ nông hộ Tây Nguyên', captionEn: 'Highland-grown Vietnamese coffee selection' },
     ];

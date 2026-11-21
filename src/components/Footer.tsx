@@ -116,13 +116,23 @@ export const Footer: React.FC = () => {
               </Link>
             </li>
             <li>
-              <Link to={localePath('/coffee/green-beans')} className="hover:text-white">
+              <Link to={localePath('/coffee/green-coffee')} className="hover:text-white">
                 {t('Cà phê nhân xanh', 'Green Coffee Beans')}
+              </Link>
+            </li>
+            <li>
+              <Link to={localePath('/coffee/green-beans')} className="hover:text-white">
+                {t('Ma trận Nhân xanh (27 SKU)', '27-SKU Green Matrix')}
               </Link>
             </li>
             <li>
               <Link to={localePath('/coffee/instant')} className="hover:text-white">
                 {t('Cà phê hòa tan', 'Instant Coffee')}
+              </Link>
+            </li>
+            <li>
+              <Link to={localePath('/coffee/gift-vouchers')} className="hover:text-white">
+                {t('Thẻ Quà Tặng Gift Voucher', 'ROAR Gift Vouchers')}
               </Link>
             </li>
           </ul>
@@ -157,6 +167,11 @@ export const Footer: React.FC = () => {
             <li>
               <Link to={localePath('/brewing')} className="hover:text-white">
                 {t('Hướng dẫn pha chế', 'Brewing Guide')}
+              </Link>
+            </li>
+            <li>
+              <Link to={localePath('/brewing-handbook')} className="hover:text-white text-[#C6A667]">
+                {t('Cẩm nang pha chế (15 bài)', 'Brewing Handbook (15 Guides)')}
               </Link>
             </li>
             <li>

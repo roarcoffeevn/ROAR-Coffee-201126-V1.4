@@ -22,10 +22,11 @@ function getQuickInterlinks(cleanPath: string): QuickLink[] {
     return [
       { labelVi: 'Rang xay', labelEn: 'Roasted', to: '/coffee/roasted' },
       { labelVi: 'Hạt rang (kg)', labelEn: 'Roasted Beans', to: '/coffee/roasted-beans' },
+      { labelVi: 'Nhân xanh', labelEn: 'Green Coffee', to: '/coffee/green-coffee' },
+      { labelVi: 'Ma trận 27 SKU', labelEn: '27-SKU Matrix', to: '/coffee/green-beans' },
       { labelVi: 'Hòa tan', labelEn: 'Instant', to: '/coffee/instant' },
-      { labelVi: 'Nhân xanh 27 SKU', labelEn: '27-SKU Green', to: '/coffee/green-beans' },
-      { labelVi: 'Ưu đãi & Voucher', labelEn: 'Offers', to: '/promotions' },
-      { labelVi: 'Pha chế', labelEn: 'Brewing', to: '/brewing' },
+      { labelVi: 'Gift Voucher', labelEn: 'Gift Voucher', to: '/coffee/gift-vouchers' },
+      { labelVi: 'Ưu đãi', labelEn: 'Offers', to: '/promotions' },
     ];
   }
 
@@ -82,10 +83,22 @@ function getDefaultTrail(cleanPath: string): BreadcrumbNode[] {
       { labelVi: 'Cà phê Hòa tan', labelEn: 'Instant Coffee' },
     ];
   }
-  if (cleanPath === '/coffee/green-beans') {
+  if (cleanPath === '/coffee/green-coffee') {
     return [
       { labelVi: 'Cửa hàng', labelEn: 'Shop', to: '/shop' },
-      { labelVi: 'Cà phê Nhân xanh B2B (27 SKU)', labelEn: 'Green Coffee Matrix (27 SKUs)' },
+      { labelVi: 'Cà phê Nhân xanh', labelEn: 'Green Coffee Beans' },
+    ];
+  }
+  if (cleanPath === '/coffee/green-beans' || cleanPath === '/green-coffee') {
+    return [
+      { labelVi: 'Cửa hàng', labelEn: 'Shop', to: '/shop' },
+      { labelVi: 'Ma trận Nhân xanh B2B (27 SKU)', labelEn: 'Green Coffee Matrix (27 SKUs)' },
+    ];
+  }
+  if (cleanPath === '/coffee/gift-vouchers') {
+    return [
+      { labelVi: 'Cửa hàng', labelEn: 'Shop', to: '/shop' },
+      { labelVi: 'Thẻ Quà Tặng ROAR Gift Voucher', labelEn: 'ROAR Gift Vouchers' },
     ];
   }
   if (cleanPath.startsWith('/product/')) {
@@ -122,6 +135,12 @@ function getDefaultTrail(cleanPath: string): BreadcrumbNode[] {
     return [
       { labelVi: 'Cửa hàng', labelEn: 'Shop', to: '/shop' },
       { labelVi: 'Hướng dẫn Pha chế Chuẩn mực', labelEn: 'Coffee Brewing Guide' },
+    ];
+  }
+  if (cleanPath === '/brewing-handbook' || cleanPath === '/cam-nang-pha-che') {
+    return [
+      { labelVi: 'Hướng dẫn Pha chế', labelEn: 'Brewing Guide', to: '/brewing' },
+      { labelVi: 'Cẩm nang Pha chế (15 Chuyên đề)', labelEn: 'Brewing Handbook (15 Guides)' },
     ];
   }
   if (cleanPath === '/about') {

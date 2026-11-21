@@ -7,6 +7,8 @@ import { localizeLedgerEntry, localizeOrderStatus, localizePaymentStatus, locali
 import { MembershipTierVisualizer } from '../components/MembershipTierVisualizer';
 import { LoyaltyTierProgressCard } from '../components/LoyaltyTierProgressCard';
 import { DailyCheckinGame } from '../components/DailyCheckinGame';
+import { MediaImage } from '../components/MediaImage';
+import { getPromoVoucherImage } from '../lib/media';
 
 export const AccountPage: React.FC = () => {
   const { lang, t, localePath } = useI18n();
@@ -925,35 +927,42 @@ export const AccountPage: React.FC = () => {
             {dash.activeVouchers.map((v: any) => (
               <div
                 key={v.id}
-                className="bg-white dark:bg-[#16221C] rounded-xl border border-[#202020]/10 dark:border-white/10 p-6 flex flex-col justify-between space-y-4"
+                className="bg-white dark:bg-[#16221C] rounded-xl border border-[#202020]/10 dark:border-white/10 overflow-hidden flex flex-col justify-between"
               >
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between gap-2 text-xs">
-                    <span className="inline-flex items-center gap-1.5 font-mono font-bold text-[#00552B] dark:text-[#C6A667]">
+                <div>
+                  <div className="relative aspect-[16/9] bg-[#0B120E] overflow-hidden">
+                    <MediaImage
+                      imageKey={getPromoVoucherImage(v)}
+                      alt={lang === 'vi' ? v.title_vi : v.title_en}
+                      className="w-full h-full object-cover"
+                    />
+                    <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#111111]/85 text-[#C6A667] font-mono text-xs font-bold shadow-sm">
                       <Tag className="w-3.5 h-3.5" /> {v.code}
                     </span>
-                    <span className="text-[#202020]/55 dark:text-[#F1EFEA]/55 tabular-nums">
+                    <span className="absolute bottom-2.5 right-3 px-2 py-0.5 rounded bg-black/70 text-white/90 text-[11px] font-mono tabular-nums">
                       {t('HSD:', 'Valid until')} {v.end_date}
                     </span>
                   </div>
-                  <h3 className="text-lg font-bold text-[#202020] dark:text-[#F1EFEA]">
-                    {lang === 'vi' ? v.title_vi : v.title_en}
-                  </h3>
-                  <p className="text-xs text-[#202020]/75 dark:text-[#F1EFEA]/75 leading-relaxed">
-                    {lang === 'vi' ? v.description_vi : v.description_en}
-                  </p>
-                  <div className="pt-2 border-t border-[#202020]/8 dark:border-white/10 text-[11px] text-[#202020]/65 dark:text-[#F1EFEA]/65 space-y-1">
-                    <p>{t('Điều kiện:', 'Terms:')} {lang === 'vi' ? v.terms_vi : v.terms_en}</p>
-                    <p className="tabular-nums">
-                      {v.min_order_value > 0
-                        ? t(`Đơn tối thiểu: ${v.min_order_value.toLocaleString('vi-VN')} ₫`, `Min order: ${v.min_order_value.toLocaleString()} VND`)
-                        : t('Áp dụng cho mọi giá trị đơn hàng', 'No minimum order required')}
-                      {v.member_only === 1 ? ` · ${t('Dành riêng Thành viên ROAR', 'ROAR Members Only')}` : ''}
+                  <div className="p-5 space-y-2.5">
+                    <h3 className="text-lg font-bold text-[#202020] dark:text-[#F1EFEA]">
+                      {lang === 'vi' ? v.title_vi : v.title_en}
+                    </h3>
+                    <p className="text-xs text-[#202020]/75 dark:text-[#F1EFEA]/75 leading-relaxed">
+                      {lang === 'vi' ? v.description_vi : v.description_en}
                     </p>
+                    <div className="pt-2 border-t border-[#202020]/8 dark:border-white/10 text-[11px] text-[#202020]/65 dark:text-[#F1EFEA]/65 space-y-1">
+                      <p>{t('Điều kiện:', 'Terms:')} {lang === 'vi' ? v.terms_vi : v.terms_en}</p>
+                      <p className="tabular-nums">
+                        {v.min_order_value > 0
+                          ? t(`Đơn tối thiểu: ${v.min_order_value.toLocaleString('vi-VN')} ₫`, `Min order: ${v.min_order_value.toLocaleString()} VND`)
+                          : t('Áp dụng cho mọi giá trị đơn hàng', 'No minimum order required')}
+                        {v.member_only === 1 ? ` · ${t('Dành riêng Thành viên ROAR', 'ROAR Members Only')}` : ''}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5 pt-2">
+                <div className="flex items-center gap-2.5 px-5 pb-5 pt-1">
                   <button
                     type="button"
                     onClick={() => copyVoucherCode(v.code)}

@@ -7,6 +7,7 @@ import { VietnamOriginMap } from '../components/VietnamOriginMap';
 import { useI18n } from '../i18n/I18nContext';
 import { type Product, useStore } from '../context/StoreContext';
 import { localizeCoffeeType, localizeJournalCategory } from '../lib/i18nHelpers';
+import { getPromoVoucherImage } from '../lib/media';
 import { fetchJournalWithFallback, fetchProductsWithFallback, fetchPromotionsWithFallback } from '../lib/staticFallback';
 
 interface HeroSlide {
@@ -144,6 +145,7 @@ export const HomePage: React.FC = () => {
   const [gcType, setGcType] = useState('RO');
   const [gcScreen, setGcScreen] = useState('S18');
   const [gcProc, setGcProc] = useState('HON');
+  const [activePersonalitySlug, setActivePersonalitySlug] = useState<string>('tiger');
 
   useEffect(() => {
     fetchProductsWithFallback()
@@ -458,13 +460,13 @@ export const HomePage: React.FC = () => {
                       className="rounded-xl bg-white dark:bg-[#16221C] border border-[#00552B]/15 dark:border-[#C6A667]/25 overflow-hidden flex flex-col justify-between"
                     >
                       <div>
-                        <Link to={localePath(`/product/${gv.slug}`)} className="block relative aspect-[16/10] bg-[#003D25] overflow-hidden">
+                        <Link to={localePath(`/product/${gv.slug}`)} className="block relative aspect-[4/5] bg-[#0B120E] overflow-hidden">
                           <MediaImage
                             imageKey={gv.image_key}
                             alt={lang === 'en' ? gv.name_en : gv.name_vi}
-                            className="w-full h-full object-cover opacity-85 hover:scale-105 transition-transform duration-300"
+                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                           />
-                          <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-[#111111]/85 text-[#C6A667] font-mono text-[11px] font-bold">
+                          <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-[#111111]/85 text-[#C6A667] font-mono text-[11px] font-bold shadow-sm">
                             {formatPrice(gv.price_vnd, gv.price_usd)}
                           </span>
                         </Link>
@@ -586,6 +588,94 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
+      {/* 2B. DIRECT SHOP-BY-CATEGORY DIRECTORY */}
+      <section className="max-w-[1280px] mx-auto px-6 pt-14 pb-2 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#00552B] dark:text-[#C6A667]">
+              {t('Danh mục sản phẩm chính thức', 'Browse by Coffee Category')}
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#202020] dark:text-[#F1EFEA] mt-1">
+              {t('Chọn Nhanh Theo Dòng Sản Phẩm', 'Direct Category Access')}
+            </h2>
+          </div>
+          <Link to={localePath('/shop')} className="text-sm font-semibold text-[#00552B] dark:text-[#C6A667] hover:underline whitespace-nowrap">
+            {t('Mở toàn bộ cửa hàng →', 'Open Full Catalog →')}
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          {[
+            {
+              to: '/coffee/roasted',
+              titleVi: 'Cà phê Rang Xay',
+              titleEn: 'Roasted Ground',
+              subVi: '7 dòng chuẩn Phin & Espresso',
+              subEn: '7 Phin & Espresso blends',
+              img: '/assets/roasted-ground/robusta-house-blend.jpg',
+            },
+            {
+              to: '/coffee/roasted-beans',
+              titleVi: 'Cà phê Hạt Rang (kg)',
+              titleEn: 'Roasted Beans (kg)',
+              subVi: '6 mã S18 · Giá sỉ 5 bậc kg',
+              subEn: '6 S18 SKUs · 5-tier kg pricing',
+              img: '/assets/roasted-beans/robusta-s18.jpg',
+            },
+            {
+              to: '/coffee/green-coffee',
+              titleVi: 'Cà phê Nhân Xanh',
+              titleEn: 'Green Coffee Beans',
+              subVi: '27 mã S14/S16/S18 · Đặt theo kg',
+              subEn: '27 S14/S16/S18 lots · Per kg',
+              img: '/assets/green-beans/robusta-natural.jpg',
+            },
+            {
+              to: '/coffee/instant',
+              titleVi: 'Cà phê Hòa Tan',
+              titleEn: 'Instant Coffee',
+              subVi: 'Bộ sưu tập Silver & Gold',
+              subEn: 'Silver & Gold collections',
+              img: '/assets/instant/instant-gold.jpg',
+            },
+            {
+              to: '/coffee/gift-vouchers',
+              titleVi: 'Gift Voucher ROAR',
+              titleEn: 'Gift Vouchers',
+              subVi: 'Thẻ quà 50k · 100k · 500k · 1tr',
+              subEn: '50k · 100k · 500k · 1M VND',
+              img: '/assets/vouchers/gift-voucher-500k.jpg',
+            },
+          ].map((cat) => (
+            <Link
+              key={cat.to}
+              to={localePath(cat.to)}
+              className="group bg-white dark:bg-[#16221C] rounded-xl border border-[#202020]/10 dark:border-white/10 overflow-hidden flex flex-col justify-between hover:border-[#00552B] dark:hover:border-[#C6A667] hover:-translate-y-0.5 transition-all"
+            >
+              <div className="aspect-[4/5] bg-[#0B120E] overflow-hidden relative">
+                <MediaImage
+                  imageKey={cat.img}
+                  alt={t(cat.titleVi, cat.titleEn)}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <span className="absolute bottom-2.5 right-2.5 px-2 py-1 rounded bg-[#111111]/85 text-[#C6A667] text-[11px] font-semibold inline-flex items-center gap-1">
+                  <span>{t('Mở', 'View')}</span>
+                  <ArrowRight className="w-3 h-3" />
+                </span>
+              </div>
+              <div className="p-3.5 space-y-1">
+                <h3 className="text-sm font-bold text-[#202020] dark:text-[#F1EFEA] group-hover:text-[#00552B] dark:group-hover:text-[#C6A667] leading-snug">
+                  {t(cat.titleVi, cat.titleEn)}
+                </h3>
+                <p className="text-[11px] text-[#202020]/65 dark:text-[#F1EFEA]/65 line-clamp-1">
+                  {t(cat.subVi, cat.subEn)}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* 3. FEATURED COFFEE COLLECTIONS */}
       <section className="max-w-[1280px] mx-auto px-6 py-16 space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -663,57 +753,289 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. SEVEN BRAND PERSONALITIES */}
-      <section className="bg-white dark:bg-[#131D18] border-y border-[#202020]/10 dark:border-white/10 py-16">
-        <div className="max-w-[1280px] mx-auto px-6 space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#00552B] dark:text-[#C6A667]">
-                {t('7 Cá Tính – 7 Dấu Ấn Riêng', 'Seven Personalities. Seven Distinct Characters.')}
-              </p>
-              <h2 className="text-3xl font-bold text-[#202020] dark:text-[#F1EFEA] mt-1">
-                {t('Khám phá Linh Vật Bản Sắc ROAR COFFEE', 'Meet the Seven ROAR Characters')}
-              </h2>
-            </div>
-            <Link to={localePath('/personalities')} className="text-sm font-semibold text-[#00552B] dark:text-[#C6A667] hover:underline whitespace-nowrap">
-              {t('Trải nghiệm đầy đủ →', 'Explore All Seven →')}
-            </Link>
-          </div>
+      {/* 4. SEVEN BRAND PERSONALITIES — ATELIER COLLECTOR SHOWCASE */}
+      {(() => {
+        const activeIdx = Math.max(
+          0,
+          personalities.findIndex((p) => p.slug === activePersonalitySlug)
+        );
+        const activePersonality = personalities[activeIdx] || personalities[0];
+        const heritageSpirits = personalities.filter((p) => p.slug !== 'black-panther');
+        const pantherSpirit = personalities.find((p) => p.slug === 'black-panther');
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
-            {personalities.map((m) => (
-              <Link
-                key={m.slug}
-                to={localePath(`/personalities/${m.slug}`)}
-                className={`rounded-xl border p-3.5 flex flex-col justify-between transition-all hover:-translate-y-1 ${
-                  m.slug === 'black-panther'
-                    ? 'bg-[#111111] text-[#F8F5EF] border-[#C6A667]/40'
-                    : 'bg-[#F8F5EF] dark:bg-[#1A2820] text-[#202020] dark:text-[#F1EFEA] border-[#202020]/10 dark:border-white/10 hover:border-[#00552B]/40 dark:hover:border-[#C6A667]/50'
-                }`}
-              >
-                <div className="aspect-square rounded-lg overflow-hidden mb-3">
-                  <MediaImage
-                    imageKey={m.custom_image_url || m.image_key}
-                    alt={`${m.animal_en} — ${m.animal_vi}`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-sm font-bold leading-tight">
-                    {lang === 'vi' ? m.animal_vi : `${m.animal_en} · ${m.animal_vi}`}
-                  </h3>
-                  <p className={`text-[11px] line-clamp-2 ${m.slug === 'black-panther' ? 'text-[#C6A667]' : 'text-[#202020]/65 dark:text-[#F1EFEA]/65'}`}>
-                    {lang === 'vi' ? m.traits_vi : m.traits_en}
+        const stepPersonality = (dir: -1 | 1) => {
+          if (!personalities.length) return;
+          const nextIdx = (activeIdx + dir + personalities.length) % personalities.length;
+          setActivePersonalitySlug(personalities[nextIdx].slug);
+        };
+
+        const isActivePanther = activePersonality?.slug === 'black-panther';
+        const activeStoryPreview = activePersonality
+          ? (lang === 'vi' ? activePersonality.story_vi : activePersonality.story_en).split('\n\n')[0]
+          : '';
+
+        return (
+          <section className="bg-[#EFECE4] dark:bg-[#0B120E] border-y border-[#202020]/10 dark:border-[#C6A667]/15 py-16 sm:py-20">
+            <div className="max-w-[1280px] mx-auto px-6 space-y-10">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div className="space-y-2 max-w-2xl">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#00552B] dark:text-[#C6A667]">
+                    {t('01–07 · Bản Sắc Linh Vật ROAR', '01–07 · Seven Brand Archetypes')}
                   </p>
-                  <p className={`text-[10px] pt-1 font-medium ${m.slug === 'black-panther' ? 'text-white/75' : 'text-[#00552B] dark:text-[#C6A667]'}`}>
-                    {lang === 'vi' ? m.product_association_vi : m.product_association_en}
+                  <h2 className="text-3xl sm:text-4xl font-bold text-[#202020] dark:text-[#F1EFEA] text-balance tracking-tight">
+                    {t('Khám phá Linh Vật Bản Sắc ROAR COFFEE', 'Meet the Seven ROAR Characters')}
+                  </h2>
+                  <p className="text-sm text-[#202020]/70 dark:text-[#F1EFEA]/70 leading-relaxed">
+                    {t(
+                      'Mỗi mẻ rang là một khí chất riêng biệt — chọn hoặc lướt qua từng biểu tượng để khám phá câu chuyện và gu thưởng thức tương ứng.',
+                      'Each roast profile embodies a distinct temperament — hover or select any crest to explore its story and paired coffee.'
+                    )}
                   </p>
                 </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+                <Link
+                  to={localePath('/personalities')}
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#00552B] dark:text-[#C6A667] hover:underline whitespace-nowrap"
+                >
+                  <span>{t('Trải nghiệm đầy đủ', 'Explore All Seven')}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+
+              {activePersonality && (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
+                  {/* Left: Editorial Spirit Spotlight */}
+                  <div
+                    className={`lg:col-span-5 rounded-2xl border p-6 sm:p-8 flex flex-col justify-between transition-colors duration-200 ${
+                      isActivePanther
+                        ? 'bg-[#101211] text-[#F8F5EF] border-[#C6A667]/40'
+                        : 'bg-[#FAF8F3] dark:bg-[#121C17] text-[#202020] dark:text-[#F1EFEA] border-[#202020]/10 dark:border-white/10'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-3 pb-5 border-b border-current/10">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`font-mono text-xs font-semibold tabular-nums tracking-wider ${
+                            isActivePanther ? 'text-[#C6A667]' : 'text-[#00552B] dark:text-[#C6A667]'
+                          }`}
+                        >
+                          {String(activeIdx + 1).padStart(2, '0')} / {String(personalities.length).padStart(2, '0')}
+                        </span>
+                        <span className="text-xs opacity-40">·</span>
+                        <span
+                          className={`text-[11px] font-semibold uppercase tracking-[0.12em] ${
+                            isActivePanther ? 'text-[#C6A667]' : 'text-[#202020]/65 dark:text-[#F1EFEA]/65'
+                          }`}
+                        >
+                          {activePersonality.is_future_collection === 1
+                            ? t('Bộ sưu tập tương lai', 'Future Release')
+                            : lang === 'vi'
+                              ? activePersonality.product_association_vi
+                              : activePersonality.product_association_en}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => stepPersonality(-1)}
+                          aria-label={t('Linh vật trước', 'Previous archetype')}
+                          className="w-8 h-8 rounded-lg border border-current/15 flex items-center justify-center hover:border-current/40 transition-colors cursor-pointer"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => stepPersonality(1)}
+                          aria-label={t('Linh vật tiếp theo', 'Next archetype')}
+                          className="w-8 h-8 rounded-lg border border-current/15 flex items-center justify-center hover:border-current/40 transition-colors cursor-pointer"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div key={activePersonality.slug} className="py-6 space-y-6 flex-1 flex flex-col justify-center">
+                      <div
+                        className={`relative aspect-square w-full max-w-[260px] mx-auto rounded-xl overflow-hidden border ${
+                          isActivePanther
+                            ? 'bg-[#090A09] border-[#C6A667]/35'
+                            : 'bg-[#F3EFE5] border-[#202020]/10 dark:border-[#C6A667]/20'
+                        }`}
+                      >
+                        <MediaImage
+                          imageKey={activePersonality.custom_image_url || activePersonality.image_key}
+                          alt={`${activePersonality.animal_en} — ${activePersonality.animal_vi}`}
+                          className="w-full h-full object-cover scale-[1.09] transition-transform duration-200"
+                        />
+                      </div>
+
+                      <div className="space-y-2.5">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                            {lang === 'vi'
+                              ? activePersonality.animal_vi
+                              : `${activePersonality.animal_en} · ${activePersonality.animal_vi}`}
+                          </h3>
+                          {lang === 'vi' && (
+                            <span className="text-xs font-mono uppercase tracking-[0.14em] opacity-50">
+                              {activePersonality.animal_en}
+                            </span>
+                          )}
+                        </div>
+
+                        <p
+                          className={`text-xs font-medium tracking-wide ${
+                            isActivePanther ? 'text-[#C6A667]' : 'text-[#00552B] dark:text-[#C6A667]'
+                          }`}
+                        >
+                          {lang === 'vi' ? activePersonality.traits_vi : activePersonality.traits_en}
+                        </p>
+
+                        <p
+                          className={`text-sm leading-relaxed line-clamp-3 pt-1 ${
+                            isActivePanther ? 'text-[#F8F5EF]/80' : 'text-[#202020]/75 dark:text-[#F1EFEA]/75'
+                          }`}
+                        >
+                          {activeStoryPreview}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="pt-5 border-t border-current/10 flex flex-wrap items-center gap-3">
+                      <Link
+                        to={localePath(`/personalities/${activePersonality.slug}`)}
+                        className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-semibold transition-opacity hover:opacity-90 whitespace-nowrap ${
+                          isActivePanther
+                            ? 'bg-[#C6A667] text-[#111111]'
+                            : 'bg-[#00552B] text-white dark:bg-[#C6A667] dark:text-[#111111]'
+                        }`}
+                      >
+                        <span>
+                          {t(`Khám phá bản sắc ${activePersonality.animal_vi}`, `Explore ${activePersonality.animal_en}`)}
+                        </span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+
+                      {activePersonality.is_future_collection !== 1 && (
+                        <Link
+                          to={localePath(
+                            isActivePanther
+                              ? '/signature-reserve'
+                              : `/product/${activePersonality.associated_product_slug}`
+                          )}
+                          className="text-xs font-semibold underline-offset-4 hover:underline opacity-80 hover:opacity-100 whitespace-nowrap"
+                        >
+                          {t('Xem dòng cà phê gắn kết →', 'View paired coffee →')}
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right: Balanced 6 Heritage Crests + Full-Width Flagship Reserve Plate */}
+                  <div className="lg:col-span-7 flex flex-col justify-between gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 sm:gap-4">
+                      {heritageSpirits.map((m) => {
+                        const globalIdx = personalities.findIndex((p) => p.slug === m.slug);
+                        const isSelected = activePersonality.slug === m.slug;
+                        return (
+                          <Link
+                            key={m.slug}
+                            to={localePath(`/personalities/${m.slug}`)}
+                            onMouseEnter={() => setActivePersonalitySlug(m.slug)}
+                            onFocus={() => setActivePersonalitySlug(m.slug)}
+                            className={`group rounded-xl border p-3.5 flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 ${
+                              isSelected
+                                ? 'bg-white dark:bg-[#17251E] border-[#00552B]/60 dark:border-[#C6A667]/60 ring-1 ring-[#00552B]/25 dark:ring-[#C6A667]/25'
+                                : 'bg-[#FAF8F3] dark:bg-[#121C17] border-[#202020]/10 dark:border-white/10 hover:border-[#00552B]/40 dark:hover:border-[#C6A667]/40'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2 mb-2.5">
+                              <span
+                                className={`font-mono text-[11px] font-semibold tabular-nums ${
+                                  isSelected ? 'text-[#00552B] dark:text-[#C6A667]' : 'text-[#202020]/45 dark:text-[#F1EFEA]/45'
+                                }`}
+                              >
+                                {String((globalIdx >= 0 ? globalIdx : 0) + 1).padStart(2, '0')}
+                              </span>
+                              <span className="text-[10px] font-medium uppercase tracking-wider text-[#202020]/45 dark:text-[#F1EFEA]/45">
+                                {m.is_future_collection === 1 ? t('Sắp ra mắt', 'Upcoming') : m.animal_en}
+                              </span>
+                            </div>
+
+                            <div className="aspect-square rounded-lg overflow-hidden bg-[#F3EFE5] border border-[#202020]/8 dark:border-[#C6A667]/15 mb-3">
+                              <MediaImage
+                                imageKey={m.custom_image_url || m.image_key}
+                                alt={`${m.animal_en} — ${m.animal_vi}`}
+                                className="w-full h-full object-cover scale-[1.09] group-hover:scale-[1.13] transition-transform duration-200"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <h3 className="text-sm font-bold text-[#202020] dark:text-[#F1EFEA] leading-tight">
+                                {lang === 'vi' ? m.animal_vi : `${m.animal_en} · ${m.animal_vi}`}
+                              </h3>
+                              <p className="text-[11px] text-[#202020]/65 dark:text-[#F1EFEA]/65 line-clamp-1">
+                                {lang === 'vi' ? m.traits_vi : m.traits_en}
+                              </p>
+                              <p className="text-[10px] pt-1 font-semibold uppercase tracking-wider text-[#00552B] dark:text-[#C6A667] truncate">
+                                {lang === 'vi' ? m.product_association_vi : m.product_association_en}
+                              </p>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+
+                    {pantherSpirit && (
+                      <Link
+                        to={localePath(`/personalities/${pantherSpirit.slug}`)}
+                        onMouseEnter={() => setActivePersonalitySlug(pantherSpirit.slug)}
+                        onFocus={() => setActivePersonalitySlug(pantherSpirit.slug)}
+                        className={`group rounded-xl border p-4 sm:p-5 bg-[#101211] text-[#F8F5EF] flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 transition-all duration-200 hover:-translate-y-0.5 ${
+                          isActivePanther
+                            ? 'border-[#C6A667] ring-1 ring-[#C6A667]/35'
+                            : 'border-[#C6A667]/30 hover:border-[#C6A667]/70'
+                        }`}
+                      >
+                        <div className="w-24 h-24 sm:w-28 sm:h-28 shrink-0 rounded-lg overflow-hidden bg-[#090A09] border border-[#C6A667]/30">
+                          <MediaImage
+                            imageKey={pantherSpirit.custom_image_url || pantherSpirit.image_key}
+                            alt={`${pantherSpirit.animal_en} — ${pantherSpirit.animal_vi}`}
+                            className="w-full h-full object-cover scale-[1.07] group-hover:scale-[1.11] transition-transform duration-200"
+                          />
+                        </div>
+
+                        <div className="flex-1 min-w-0 space-y-1.5">
+                          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#C6A667]">
+                            <span className="font-mono tabular-nums">07</span>
+                            <span className="opacity-45">·</span>
+                            <span>
+                              {lang === 'vi' ? pantherSpirit.product_association_vi : pantherSpirit.product_association_en}
+                            </span>
+                          </div>
+                          <h3 className="text-lg sm:text-xl font-bold text-[#F8F5EF] tracking-tight">
+                            {lang === 'vi'
+                              ? `${pantherSpirit.animal_vi} (${pantherSpirit.animal_en})`
+                              : `${pantherSpirit.animal_en} · ${pantherSpirit.animal_vi}`}
+                          </h3>
+                          <p className="text-xs text-[#F8F5EF]/75 leading-relaxed">
+                            {lang === 'vi' ? pantherSpirit.traits_vi : pantherSpirit.traits_en}
+                          </p>
+                        </div>
+
+                        <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#C6A667] whitespace-nowrap sm:self-center">
+                          <span>{t('Signature Reserve', 'Signature Reserve')}</span>
+                          <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+                        </div>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      })()}
 
       {/* 5. GREEN COFFEE BEANS (B2B CONFIGURABLE MATRIX GATEWAY) */}
       <section className="max-w-[1280px] mx-auto px-6 py-16">
@@ -977,26 +1299,39 @@ export const HomePage: React.FC = () => {
 
           <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
             {promotions.map((promo) => (
-              <div key={promo.id} className="bg-[#F8F5EF] dark:bg-[#1A2820] rounded-xl border border-[#202020]/10 dark:border-white/10 p-5 flex flex-col justify-between space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs text-[#00552B] dark:text-[#C6A667] font-mono">
-                    <span className="font-bold">{promo.code}</span>
-                    <span className="tabular-nums">{t('Hạn:', 'Valid until')} {promo.end_date}</span>
+              <div key={promo.id} className="bg-[#F8F5EF] dark:bg-[#1A2820] rounded-xl border border-[#202020]/10 dark:border-white/10 overflow-hidden flex flex-col justify-between">
+                <div>
+                  <div className="relative aspect-[16/10] bg-[#0B120E] overflow-hidden">
+                    <MediaImage
+                      imageKey={getPromoVoucherImage(promo)}
+                      alt={lang === 'vi' ? promo.title_vi : promo.title_en}
+                      className="w-full h-full object-cover"
+                    />
+                    <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-[#111111]/85 text-[#C6A667] font-mono text-[11px] font-bold tracking-wider">
+                      {promo.code}
+                    </span>
+                    <span className="absolute bottom-2 right-2.5 px-2 py-0.5 rounded bg-black/70 text-white/90 font-mono text-[10px] tabular-nums">
+                      {t('Hạn:', 'Valid until')} {promo.end_date}
+                    </span>
                   </div>
-                  <h3 className="text-base font-bold text-[#202020] dark:text-[#F1EFEA]">
-                    {lang === 'vi' ? promo.title_vi : promo.title_en}
-                  </h3>
-                  <p className="text-xs text-[#202020]/75 dark:text-[#F1EFEA]/75 leading-relaxed">
-                    {lang === 'vi' ? promo.description_vi : promo.description_en}
-                  </p>
+                  <div className="p-4 space-y-1.5">
+                    <h3 className="text-base font-bold text-[#202020] dark:text-[#F1EFEA]">
+                      {lang === 'vi' ? promo.title_vi : promo.title_en}
+                    </h3>
+                    <p className="text-xs text-[#202020]/75 dark:text-[#F1EFEA]/75 leading-relaxed line-clamp-2">
+                      {lang === 'vi' ? promo.description_vi : promo.description_en}
+                    </p>
+                  </div>
                 </div>
-                <Link
-                  to={localePath('/shop')}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-[#00552B] dark:text-[#C6A667] hover:underline"
-                >
-                  <span>{t('Mua sắm ngay', 'Shop Now')}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
+                <div className="px-4 pb-4">
+                  <Link
+                    to={localePath('/shop')}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#00552B] dark:text-[#C6A667] hover:underline"
+                  >
+                    <span>{t('Mua sắm ngay', 'Shop Now')}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
               </div>
             ))}
           </div>

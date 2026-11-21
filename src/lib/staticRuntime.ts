@@ -1,6 +1,7 @@
 import { loadStaticSnapshot } from './staticFallback';
 import { calculateShippingFee, resolveVolumeTier } from './pricing';
 import { ALL_ADMIN_PERMISSIONS } from './rbac';
+import { buildLiveShippingTracking } from './shippingTracking';
 
 const STATIC_STATE_KEY = 'roar_static_runtime_v1';
 
@@ -66,6 +67,119 @@ function getDefaultUsers(): StaticUserRecord[] {
   ];
 }
 
+function getDefaultOrders(): any[] {
+  return [
+    {
+      id: 9001,
+      order_number: 'RC-20261114-1892',
+      user_id: 2,
+      customer_name: 'Nguyễn Minh Khôi',
+      customer_email: 'member@roarcoffee.vn',
+      customer_phone: '0909 123 456',
+      shipping_address: '12 Lê Lợi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
+      currency: 'VND',
+      subtotal: 440000,
+      discount_amount: 0,
+      points_redeemed: 0,
+      points_discount: 0,
+      shipping_fee: 0,
+      total: 440000,
+      voucher_code: '',
+      payment_method: 'momo',
+      payment_status: 'paid',
+      order_status: 'Shipping',
+      tracking_code: 'GHN-ROAR-884210',
+      notes: 'Đã đóng gói chống sốc',
+      created_at: '2026-11-18 09:15:00',
+      updated_at: '2026-11-20 10:30:00',
+      items: [
+        {
+          id: 1,
+          sku: 'RC-ESG-500',
+          product_name_vi: 'ROAR Espresso Gold (Đại Bàng)',
+          product_name_en: 'ROAR Espresso Gold (Eagle)',
+          variant_label: '500g · Whole Bean (Gold)',
+          quantity: 1,
+          unit_price_vnd: 440000,
+          line_total_vnd: 440000,
+        },
+      ],
+    },
+    {
+      id: 9002,
+      order_number: 'RC-20261115-2048',
+      user_id: 2,
+      customer_name: 'Nguyễn Minh Khôi',
+      customer_email: 'member@roarcoffee.vn',
+      customer_phone: '0909 123 456',
+      shipping_address: '45 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh',
+      currency: 'VND',
+      subtotal: 390000,
+      discount_amount: 50000,
+      points_redeemed: 0,
+      points_discount: 0,
+      shipping_fee: 35000,
+      total: 375000,
+      voucher_code: 'ROARESPRESSO50',
+      payment_method: 'vietqr',
+      payment_status: 'pending_verification',
+      order_status: 'Pending',
+      tracking_code: '',
+      notes: 'Giao giờ hành chính.',
+      created_at: '2026-11-20 08:40:00',
+      updated_at: '2026-11-20 08:40:00',
+      items: [
+        {
+          id: 2,
+          sku: 'RC-ESP-250',
+          product_name_vi: 'ROAR Espresso (Cáo)',
+          product_name_en: 'ROAR Espresso (Fox)',
+          variant_label: '250g · Whole Bean',
+          quantity: 2,
+          unit_price_vnd: 195000,
+          line_total_vnd: 390000,
+        },
+      ],
+    },
+    {
+      id: 9003,
+      order_number: 'RC-20261101-1001',
+      user_id: 2,
+      customer_name: 'Nguyễn Minh Khôi',
+      customer_email: 'member@roarcoffee.vn',
+      customer_phone: '0909 123 456',
+      shipping_address: '12 Lê Lợi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
+      currency: 'VND',
+      subtotal: 490000,
+      discount_amount: 0,
+      points_redeemed: 0,
+      points_discount: 0,
+      shipping_fee: 0,
+      total: 490000,
+      voucher_code: '',
+      payment_method: 'bank_transfer',
+      payment_status: 'confirmed_demo',
+      order_status: 'Completed',
+      tracking_code: 'VN-DEMO-1001',
+      notes: '',
+      created_at: '2026-11-01 10:00:00',
+      updated_at: '2026-11-03 14:20:00',
+      items: [
+        {
+          id: 3,
+          sku: 'RC-RES-250',
+          product_name_vi: 'ROAR Signature Reserve (Báo Đen)',
+          product_name_en: 'ROAR Signature Reserve (Black Panther)',
+          variant_label: '250g · Signature Tin (Whole Bean)',
+          quantity: 1,
+          unit_price_vnd: 490000,
+          line_total_vnd: 490000,
+        },
+      ],
+    },
+  ];
+}
+
 function readState(): StaticRuntimeState {
   try {
     const raw = window.localStorage.getItem(STATIC_STATE_KEY);
@@ -73,7 +187,7 @@ function readState(): StaticRuntimeState {
       const parsed = JSON.parse(raw);
       return {
         users: Array.isArray(parsed.users) && parsed.users.length > 0 ? parsed.users : getDefaultUsers(),
-        orders: Array.isArray(parsed.orders) ? parsed.orders : [],
+        orders: Array.isArray(parsed.orders) && parsed.orders.length > 0 ? parsed.orders : getDefaultOrders(),
         b2bInquiries: Array.isArray(parsed.b2bInquiries) ? parsed.b2bInquiries : [],
         newsletterSubscribers: Array.isArray(parsed.newsletterSubscribers) ? parsed.newsletterSubscribers : [],
         settingsOverlay: parsed.settingsOverlay || {},
@@ -88,7 +202,7 @@ function readState(): StaticRuntimeState {
   }
   return {
     users: getDefaultUsers(),
-    orders: [],
+    orders: getDefaultOrders(),
     b2bInquiries: [],
     newsletterSubscribers: [],
     settingsOverlay: {},
@@ -531,13 +645,41 @@ export async function handleStaticApiFallback(
     }, 201);
   }
 
+  if (pathname === '/api/orders/shipping-status' && method === 'GET') {
+    const orderId = (searchParams.get('orderId') || searchParams.get('orderNumber') || '').trim().toUpperCase();
+    const email = (searchParams.get('email') || '').trim().toLowerCase();
+    if (!orderId || !email) {
+      return jsonResponse({ error: 'Vui lòng nhập đầy đủ Mã đơn hàng (Order ID) và Email đặt hàng.' }, 400);
+    }
+    const matched = state.orders.find(
+      (o) =>
+        String(o.order_number || '').trim().toUpperCase() === orderId &&
+        String(o.customer_email || '').trim().toLowerCase() === email
+    );
+    if (!matched) {
+      return jsonResponse({ error: 'Không tìm thấy đơn hàng khớp với Mã đơn hàng và Email đã nhập.' }, 404);
+    }
+    const shipping = buildLiveShippingTracking(matched);
+    return jsonResponse({
+      ok: true,
+      shipping,
+      order: { ...matched, shipping_tracking: shipping },
+    });
+  }
+
   if (pathname === '/api/orders/track' && method === 'GET') {
     const orderNumber = (searchParams.get('orderNumber') || '').trim().toUpperCase();
     const phone = (searchParams.get('phone') || '').replace(/\D/g, '').replace(/^84/, '0');
     const email = (searchParams.get('email') || '').trim().toLowerCase();
     const matches = state.orders.filter((o) => {
-      if (orderNumber && String(o.order_number || '').toUpperCase() === orderNumber) return true;
-      if (email && String(o.customer_email || '').toLowerCase() === email) return true;
+      if (orderNumber && email) {
+        return (
+          String(o.order_number || '').trim().toUpperCase() === orderNumber &&
+          String(o.customer_email || '').trim().toLowerCase() === email
+        );
+      }
+      if (orderNumber && String(o.order_number || '').trim().toUpperCase() === orderNumber) return true;
+      if (email && String(o.customer_email || '').trim().toLowerCase() === email) return true;
       if (phone) {
         const op = String(o.customer_phone || '').replace(/\D/g, '').replace(/^84/, '0');
         if (op === phone) return true;
@@ -545,7 +687,11 @@ export async function handleStaticApiFallback(
       return false;
     });
     if (matches.length === 0) return jsonResponse({ error: 'Không tìm thấy đơn hàng phù hợp.' }, 404);
-    return jsonResponse({ orders: matches, order: matches[0] });
+    const enriched = matches.map((o) => ({
+      ...o,
+      shipping_tracking: buildLiveShippingTracking(o),
+    }));
+    return jsonResponse({ orders: enriched, order: enriched[0] });
   }
 
   // 7. B2B & Newsletter Public Submissions

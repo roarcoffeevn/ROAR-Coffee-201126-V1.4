@@ -127,7 +127,16 @@ export async function fetchProductsWithFallback(queryParams?: URLSearchParams): 
 
   return snap.tables.products
     .filter((p) => p.status !== 'draft')
-    .filter((p) => (!category || category === 'all' ? true : p.category === category))
+    .filter((p) => {
+      if (!category || category === 'all') return true;
+      if (category === 'gift_voucher') {
+        return p.sub_category === 'Gift Voucher' || String(p.slug || '').startsWith('gift-voucher-');
+      }
+      if (category === 'roasted') {
+        return p.category === 'roasted' && p.sub_category !== 'Gift Voucher';
+      }
+      return p.category === category;
+    })
     .filter((p) => (!screen || screen === 'all' ? true : p.screen_size === screen))
     .filter((p) => (!processing || processing === 'all' ? true : p.processing_method === processing))
     .filter((p) => (!coffeeType || coffeeType === 'all' ? true : String(p.coffee_type || '').toLowerCase().includes(coffeeType.toLowerCase())))
@@ -223,6 +232,7 @@ export async function fetchArticleBySlugWithFallback(
 
   const related = snap.tables.journal_articles
     .filter((a) => a.id !== found.id && (a.published === 1 || a.published === true))
+    .sort((a, b) => (a.category === found.category ? 0 : 1) - (b.category === found.category ? 0 : 1))
     .slice(0, 3);
 
   return {

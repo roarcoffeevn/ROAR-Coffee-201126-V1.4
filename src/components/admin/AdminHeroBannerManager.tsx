@@ -2,8 +2,12 @@ import React, { useEffect, useState } from 'react';
 import {
   ArrowDown,
   ArrowUp,
+  Eye,
+  EyeOff,
   Image as ImageIcon,
+  ImagePlus,
   Layers,
+  LayoutTemplate,
   Plus,
   RotateCcw,
   Save,
@@ -11,6 +15,15 @@ import {
 } from 'lucide-react';
 import { useI18n } from '../../i18n/I18nContext';
 import { useStore } from '../../context/StoreContext';
+import { MediaImage } from '../MediaImage';
+import { MediaPickerModal, type MediaAssetRecord } from './MediaPickerModal';
+import {
+  CATEGORY_BANNER_META,
+  DEFAULT_CATEGORY_BANNERS,
+  parseCategoryBanners,
+  type CategoryBannerKey,
+  type CmsCategoryBanner,
+} from '../../lib/categoryBanners';
 
 export interface CmsHeroSlide {
   id: string;
@@ -80,18 +93,30 @@ export const DEFAULT_CMS_HERO_METRICS: CmsHeroMetric[] = [
 interface AdminHeroBannerManagerProps {
   settings: Record<string, string>;
   onSaved?: (next: Record<string, string>) => void;
+  mediaAssets?: MediaAssetRecord[];
+  onMediaUploaded?: () => Promise<void> | void;
 }
 
 export const AdminHeroBannerManager: React.FC<AdminHeroBannerManagerProps> = ({
   settings,
   onSaved,
+  mediaAssets = [],
+  onMediaUploaded = () => {},
 }) => {
   const { t } = useI18n();
   const { apiFetch, showToast, refreshBootstrap } = useStore();
-  const [subTab, setSubTab] = useState<'slides' | 'carousel'>('slides');
+  const [subTab, setSubTab] = useState<'category_banners' | 'slides' | 'carousel'>('category_banners');
   const [slides, setSlides] = useState<CmsHeroSlide[]>(DEFAULT_CMS_HERO_SLIDES);
   const [metrics, setMetrics] = useState<CmsHeroMetric[]>(DEFAULT_CMS_HERO_METRICS);
+  const [categoryBanners, setCategoryBanners] = useState<CmsCategoryBanner[]>(() =>
+    parseCategoryBanners(settings.cms_category_banners_json)
+  );
   const [saving, setSaving] = useState(false);
+  const [pickerTarget, setPickerTarget] = useState<
+    | { kind: 'slide'; slideId: string }
+    | { kind: 'category'; categoryKey: CategoryBannerKey }
+    | null
+  >(null);
 
   useEffect(() => {
     try {
@@ -110,7 +135,8 @@ export const AdminHeroBannerManager: React.FC<AdminHeroBannerManagerProps> = ({
     } catch {
       // keep default
     }
-  }, [settings.cms_hero_slides_json, settings.cms_hero_metrics_json]);
+    setCategoryBanners(parseCategoryBanners(settings.cms_category_banners_json));
+  }, [settings.cms_hero_slides_json, settings.cms_hero_metrics_json, settings.cms_category_banners_json]);
 
   const moveSlide = (idx: number, dir: -1 | 1) => {
     const target = idx + dir;
@@ -128,12 +154,22 @@ export const AdminHeroBannerManager: React.FC<AdminHeroBannerManagerProps> = ({
     setMetrics(copy);
   };
 
+  const updateCategoryBanner = (
+    categoryKey: CategoryBannerKey,
+    patch: Partial<CmsCategoryBanner>
+  ) => {
+    setCategoryBanners((prev) =>
+      prev.map((b) => (b.categoryKey === categoryKey ? { ...b, ...patch } : b))
+    );
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
       const payload = {
         cms_hero_slides_json: JSON.stringify(slides),
         cms_hero_metrics_json: JSON.stringify(metrics),
+        cms_category_banners_json: JSON.stringify(categoryBanners),
       };
       const res = await apiFetch('/api/admin/settings', {
         method: 'PATCH',
@@ -143,9 +179,14 @@ export const AdminHeroBannerManager: React.FC<AdminHeroBannerManagerProps> = ({
       if (res.ok) {
         onSaved?.({ ...settings, ...payload });
         await refreshBootstrap();
-        showToast(t('Đã lưu nội dung Hero Banner & Carousel!', 'Saved Hero Banner & Carousel content!'));
+        showToast(
+          t(
+            'Đã lưu Banner Danh mục Sản phẩm, Hero & Carousel!',
+            'Saved Category Banners, Hero & Carousel!'
+          )
+        );
       } else {
-        showToast(t('Không thể lưu cấu hình Hero Banner.', 'Failed to save Hero Banner settings.'));
+        showToast(t('Không thể lưu cấu hình Banner.', 'Failed to save Banner settings.'));
       }
     } finally {
       setSaving(false);
@@ -158,12 +199,12 @@ export const AdminHeroBannerManager: React.FC<AdminHeroBannerManagerProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-[#16221C] p-5 rounded-xl border border-[#202020]/10 dark:border-white/10">
         <div>
           <h2 className="text-xl font-bold text-[#202020] dark:text-[#F1EFEA]">
-            {t('Quản lý Hero Banner & Carousel Trang Chủ', 'Hero Banner & Carousel Manager')}
+            {t('Quản lý Banner Danh Mục, Hero & Carousel', 'Category Banners, Hero & Carousel Manager')}
           </h2>
           <p className="text-xs text-[#202020]/65 dark:text-[#F1EFEA]/65 mt-1">
             {t(
-              'Chỉnh sửa trực tiếp tiêu đề, mô tả, hình ảnh, nút CTA của các slide Hero Banner và dải thẻ Carousel chạy ngang.',
-              'Edit Hero Banner slides (headlines, copy, images, CTAs) and the running Hero Metrics Carousel.'
+              'Thay thế hình ảnh, tiêu đề song ngữ và CTA cho Banner từng danh mục sản phẩm (/shop) cũng như Hero Banner & Carousel Trang chủ.',
+              'Customize artwork, bilingual headlines, and CTAs for every Product Category Banner on /shop as well as Homepage Hero & Metrics.'
             )}
           </p>
         </div>
@@ -173,6 +214,7 @@ export const AdminHeroBannerManager: React.FC<AdminHeroBannerManagerProps> = ({
             onClick={() => {
               setSlides(DEFAULT_CMS_HERO_SLIDES);
               setMetrics(DEFAULT_CMS_HERO_METRICS);
+              setCategoryBanners(DEFAULT_CATEGORY_BANNERS);
               showToast(t('Đã khôi phục mặc định (bấm Lưu để áp dụng)', 'Reset to defaults (click Save to apply)'));
             }}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#202020]/15 dark:border-white/15 text-xs font-semibold cursor-pointer"
@@ -187,13 +229,23 @@ export const AdminHeroBannerManager: React.FC<AdminHeroBannerManagerProps> = ({
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00552B] text-white text-xs font-semibold hover:bg-[#004422] disabled:opacity-50 cursor-pointer"
           >
             <Save className="w-3.5 h-3.5" />
-            <span>{saving ? t('Đang lưu...', 'Saving...') : t('Lưu Hero & Carousel', 'Save Changes')}</span>
+            <span>{saving ? t('Đang lưu...', 'Saving...') : t('Lưu tất cả Banner', 'Save All Banners')}</span>
           </button>
         </div>
       </div>
 
       {/* Sub-tabs */}
-      <div className="flex gap-2 border-b border-[#202020]/10 dark:border-white/10 pb-2">
+      <div className="flex flex-wrap gap-2 border-b border-[#202020]/10 dark:border-white/10 pb-2">
+        <button
+          type="button"
+          onClick={() => setSubTab('category_banners')}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer ${
+            subTab === 'category_banners' ? 'bg-[#00552B] text-white' : 'text-[#202020]/70 dark:text-[#F1EFEA]/70 hover:bg-[#202020]/5'
+          }`}
+        >
+          <LayoutTemplate className="w-4 h-4" />
+          <span>{t('Banner Danh Mục Sản Phẩm', 'Product Category Banners')} ({categoryBanners.length})</span>
+        </button>
         <button
           type="button"
           onClick={() => setSubTab('slides')}
@@ -202,7 +254,7 @@ export const AdminHeroBannerManager: React.FC<AdminHeroBannerManagerProps> = ({
           }`}
         >
           <ImageIcon className="w-4 h-4" />
-          <span>{t('Slide Hero Banner', 'Hero Slides')} ({slides.length})</span>
+          <span>{t('Slide Hero Trang Chủ', 'Homepage Hero Slides')} ({slides.length})</span>
         </button>
         <button
           type="button"
@@ -215,6 +267,174 @@ export const AdminHeroBannerManager: React.FC<AdminHeroBannerManagerProps> = ({
           <span>{t('Carousel Thẻ Chỉ Số', 'Metrics Carousel')} ({metrics.length})</span>
         </button>
       </div>
+
+      {/* TAB 0: PRODUCT CATEGORY BANNERS */}
+      {subTab === 'category_banners' && (
+        <div className="space-y-4">
+          {categoryBanners.map((b) => {
+            const meta = CATEGORY_BANNER_META[b.categoryKey];
+            return (
+              <div
+                key={b.categoryKey}
+                className="bg-white dark:bg-[#16221C] p-5 rounded-xl border border-[#202020]/10 dark:border-white/10 space-y-4"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#202020]/10 dark:border-white/10 pb-3">
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#00552B] dark:text-[#C6A667]">
+                      {t(meta.labelVi, meta.labelEn)}
+                    </span>
+                    <span className="ml-2 font-mono text-[11px] text-[#202020]/50 dark:text-[#F1EFEA]/50">
+                      {meta.route}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => updateCategoryBanner(b.categoryKey, { visible: !b.visible })}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
+                      b.visible
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-700/50'
+                        : 'bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
+                    }`}
+                  >
+                    {b.visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                    <span>{b.visible ? t('Đang hiển thị', 'Visible') : t('Đang ẩn', 'Hidden')}</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                  {/* Live Thumbnail + Image Picker */}
+                  <div className="lg:col-span-4 space-y-2.5">
+                    <div className="aspect-[16/9] rounded-xl overflow-hidden bg-[#0D1B14] border border-[#202020]/15 dark:border-white/15">
+                      <MediaImage
+                        imageKey={b.imageUrl}
+                        alt={b.titleVi}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        value={b.imageUrl}
+                        onChange={(e) => updateCategoryBanner(b.categoryKey, { imageUrl: e.target.value })}
+                        placeholder="hero_roar_coffee hoặc /assets/..."
+                        className="flex-1 min-w-0 px-2.5 py-1.5 rounded-lg border border-[#202020]/15 dark:border-white/15 bg-[#F8F5EF] dark:bg-[#0E1512] font-mono text-[11px]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setPickerTarget({ kind: 'category', categoryKey: b.categoryKey })}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00552B] text-white text-[11px] font-semibold hover:bg-[#004422] shrink-0 cursor-pointer"
+                      >
+                        <ImagePlus className="w-3.5 h-3.5" />
+                        <span>{t('Thay ảnh', 'Pick Image')}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Bilingual Editorial Inputs */}
+                  <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <label className="font-semibold text-[#202020]/65 dark:text-[#F1EFEA]/65">
+                        {t('Nhãn phụ Eyebrow (VI)', 'Eyebrow (VI)')}
+                      </label>
+                      <input
+                        value={b.eyebrowVi}
+                        onChange={(e) => updateCategoryBanner(b.categoryKey, { eyebrowVi: e.target.value })}
+                        className="mt-1 w-full px-3 py-2 rounded-lg border border-[#202020]/15 dark:border-white/15 bg-[#F8F5EF] dark:bg-[#0E1512]"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-semibold text-[#202020]/65 dark:text-[#F1EFEA]/65">
+                        {t('Nhãn phụ Eyebrow (EN)', 'Eyebrow (EN)')}
+                      </label>
+                      <input
+                        value={b.eyebrowEn}
+                        onChange={(e) => updateCategoryBanner(b.categoryKey, { eyebrowEn: e.target.value })}
+                        className="mt-1 w-full px-3 py-2 rounded-lg border border-[#202020]/15 dark:border-white/15 bg-[#F8F5EF] dark:bg-[#0E1512]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-semibold text-[#202020]/65 dark:text-[#F1EFEA]/65">
+                        {t('Tiêu đề Banner (VI)', 'Headline (VI)')}
+                      </label>
+                      <input
+                        value={b.titleVi}
+                        onChange={(e) => updateCategoryBanner(b.categoryKey, { titleVi: e.target.value })}
+                        className="mt-1 w-full px-3 py-2 rounded-lg border border-[#202020]/15 dark:border-white/15 bg-[#F8F5EF] dark:bg-[#0E1512] font-semibold"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-semibold text-[#202020]/65 dark:text-[#F1EFEA]/65">
+                        {t('Tiêu đề Banner (EN)', 'Headline (EN)')}
+                      </label>
+                      <input
+                        value={b.titleEn}
+                        onChange={(e) => updateCategoryBanner(b.categoryKey, { titleEn: e.target.value })}
+                        className="mt-1 w-full px-3 py-2 rounded-lg border border-[#202020]/15 dark:border-white/15 bg-[#F8F5EF] dark:bg-[#0E1512] font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-semibold text-[#202020]/65 dark:text-[#F1EFEA]/65">
+                        {t('Mô tả ngắn (VI)', 'Subtitle (VI)')}
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={b.subtitleVi}
+                        onChange={(e) => updateCategoryBanner(b.categoryKey, { subtitleVi: e.target.value })}
+                        className="mt-1 w-full px-3 py-2 rounded-lg border border-[#202020]/15 dark:border-white/15 bg-[#F8F5EF] dark:bg-[#0E1512]"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-semibold text-[#202020]/65 dark:text-[#F1EFEA]/65">
+                        {t('Mô tả ngắn (EN)', 'Subtitle (EN)')}
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={b.subtitleEn}
+                        onChange={(e) => updateCategoryBanner(b.categoryKey, { subtitleEn: e.target.value })}
+                        className="mt-1 w-full px-3 py-2 rounded-lg border border-[#202020]/15 dark:border-white/15 bg-[#F8F5EF] dark:bg-[#0E1512]"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div>
+                        <label className="font-semibold text-[#202020]/65 dark:text-[#F1EFEA]/65">
+                          {t('Chữ nút CTA (VI)', 'CTA Label (VI)')}
+                        </label>
+                        <input
+                          value={b.ctaLabelVi}
+                          onChange={(e) => updateCategoryBanner(b.categoryKey, { ctaLabelVi: e.target.value })}
+                          className="mt-1 w-full px-3 py-2 rounded-lg border border-[#202020]/15 dark:border-white/15 bg-[#F8F5EF] dark:bg-[#0E1512]"
+                        />
+                      </div>
+                      <div>
+                        <label className="font-semibold text-[#202020]/65 dark:text-[#F1EFEA]/65">
+                          {t('Chữ nút CTA (EN)', 'CTA Label (EN)')}
+                        </label>
+                        <input
+                          value={b.ctaLabelEn}
+                          onChange={(e) => updateCategoryBanner(b.categoryKey, { ctaLabelEn: e.target.value })}
+                          className="mt-1 w-full px-3 py-2 rounded-lg border border-[#202020]/15 dark:border-white/15 bg-[#F8F5EF] dark:bg-[#0E1512]"
+                        />
+                      </div>
+                      <div>
+                        <label className="font-semibold text-[#202020]/65 dark:text-[#F1EFEA]/65">
+                          {t('Đường dẫn CTA', 'CTA Path')}
+                        </label>
+                        <input
+                          value={b.ctaPath}
+                          onChange={(e) => updateCategoryBanner(b.categoryKey, { ctaPath: e.target.value })}
+                          className="mt-1 w-full px-3 py-2 rounded-lg border border-[#202020]/15 dark:border-white/15 bg-[#F8F5EF] dark:bg-[#0E1512] font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* TAB 1: HERO SLIDES */}
       {subTab === 'slides' && (
@@ -270,11 +490,21 @@ export const AdminHeroBannerManager: React.FC<AdminHeroBannerManagerProps> = ({
                 </div>
                 <div>
                   <label className="font-semibold text-[#202020]/65 dark:text-[#F1EFEA]/65">{t('URL Hình ảnh Banner', 'Banner Image URL')}</label>
-                  <input
-                    value={s.imageUrl}
-                    onChange={(e) => setSlides((prev) => prev.map((x) => (x.id === s.id ? { ...x, imageUrl: e.target.value } : x)))}
-                    className="mt-1 w-full px-3 py-2 rounded-lg border border-[#202020]/15 dark:border-white/15 bg-[#F8F5EF] dark:bg-[#0E1512] font-mono"
-                  />
+                  <div className="mt-1 flex gap-2">
+                    <input
+                      value={s.imageUrl}
+                      onChange={(e) => setSlides((prev) => prev.map((x) => (x.id === s.id ? { ...x, imageUrl: e.target.value } : x)))}
+                      className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-[#202020]/15 dark:border-white/15 bg-[#F8F5EF] dark:bg-[#0E1512] font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPickerTarget({ kind: 'slide', slideId: s.id })}
+                      className="inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-[#00552B] text-white font-semibold shrink-0 cursor-pointer"
+                    >
+                      <ImagePlus className="w-3.5 h-3.5" />
+                      <span>{t('Chọn ảnh', 'Pick')}</span>
+                    </button>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -393,6 +623,25 @@ export const AdminHeroBannerManager: React.FC<AdminHeroBannerManagerProps> = ({
           </button>
         </div>
       )}
+
+      <MediaPickerModal
+        open={Boolean(pickerTarget)}
+        onClose={() => setPickerTarget(null)}
+        mediaAssets={mediaAssets}
+        onMediaUploaded={onMediaUploaded}
+        title={t('Chọn hoặc tải lên ảnh Banner', 'Select or Upload Banner Image')}
+        onSelect={(keyOrUrl) => {
+          if (!pickerTarget) return;
+          if (pickerTarget.kind === 'category') {
+            updateCategoryBanner(pickerTarget.categoryKey, { imageUrl: keyOrUrl });
+          } else {
+            setSlides((prev) =>
+              prev.map((x) => (x.id === pickerTarget.slideId ? { ...x, imageUrl: keyOrUrl } : x))
+            );
+          }
+          setPickerTarget(null);
+        }}
+      />
     </div>
   );
 };

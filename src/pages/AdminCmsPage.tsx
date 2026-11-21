@@ -806,7 +806,7 @@ export const AdminCmsPage: React.FC = () => {
           count: inquiries.length + newsletterSubscribers.length,
         },
         { id: 'brand', label: t('Linh vật & Vùng trồng', 'Mascots & Origins'), icon: <Compass className="w-4 h-4" /> },
-        { id: 'hero', label: t('Hero Banner & Carousel', 'Hero & Carousel'), icon: <ImageIcon className="w-4 h-4" /> },
+        { id: 'hero', label: t('Banner Danh mục & Hero', 'Category Banners & Hero'), icon: <ImageIcon className="w-4 h-4" /> },
         { id: 'menus', label: t('Menu & Danh mục', 'Menus & Categories'), icon: <Menu className="w-4 h-4" /> },
         { id: 'settings', label: t('Cài đặt Website', 'Site Settings'), icon: <Settings className="w-4 h-4" /> },
         {
@@ -2465,11 +2465,13 @@ export const AdminCmsPage: React.FC = () => {
             </div>
           )}
 
-          {/* 9a. HERO BANNER & CAROUSEL MANAGER */}
+          {/* 9a. CATEGORY BANNERS, HERO BANNER & CAROUSEL MANAGER */}
           {resolvedSection === 'hero' && hasAdminPermission(user, 'settings') && (
             <AdminHeroBannerManager
               settings={siteSettings}
               onSaved={(next) => setSiteSettings(next)}
+              mediaAssets={mediaAssets}
+              onMediaUploaded={loadMedia}
             />
           )}
 

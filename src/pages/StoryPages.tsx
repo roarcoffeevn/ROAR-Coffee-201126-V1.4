@@ -151,7 +151,7 @@ export const FarmToCupPage: React.FC = () => {
 };
 
 export const BrewingGuidePage: React.FC = () => {
-  const { lang, t } = useI18n();
+  const { lang, t, localePath } = useI18n();
   const { cmsPages } = useStore();
   const [servings, setServings] = useState(1);
   const [methodIdx, setMethodIdx] = useState(0);
@@ -398,6 +398,29 @@ export const BrewingGuidePage: React.FC = () => {
           ))}
         </div>
       )}
+
+      <div className="bg-[#003D25] text-white rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+        <div className="space-y-1.5">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#C6A667]">
+            {t('Khám phá · Thư viện chuyên sâu', 'Discover · In-Depth Library')}
+          </p>
+          <h2 className="text-xl sm:text-2xl font-bold">
+            {t('Cẩm Nang Pha Chế ROAR COFFEE — 15 Bài Viết & Gợi Ý Sản Phẩm', 'ROAR Brewing Handbook — 15 Craft Guides & Coffee Pairings')}
+          </h2>
+          <p className="text-xs sm:text-sm text-[#F8F5EF]/80">
+            {t(
+              'Khám phá 15 hướng dẫn chi tiết từ Phin, Espresso, V60, Cold Brew, Chemex đến Moka Pot kèm dòng cà phê ROAR phù hợp nhất.',
+              'Explore 15 step-by-step guides from Phin and Espresso to V60, Cold Brew, Chemex, and Moka Pot paired directly with ROAR coffees.'
+            )}
+          </p>
+        </div>
+        <Link
+          to={localePath('/brewing-handbook')}
+          className="px-5 py-3 bg-[#C6A667] text-[#111111] text-xs sm:text-sm font-semibold rounded-lg hover:bg-[#d4b67a] transition-colors whitespace-nowrap text-center"
+        >
+          {t('Mở 15 bài Cẩm nang →', 'Explore 15 Guides →')}
+        </Link>
+      </div>
     </div>
   );
 };

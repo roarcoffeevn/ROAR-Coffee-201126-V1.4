@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Bell, ChevronDown, Menu, Moon, Search, ShoppingBag, Sun, User, X, Phone, Mail } from 'lucide-react';
 import { AdaptiveLogo } from './AdaptiveLogo';
-import { useI18n } from '../i18n/I18nContext';
+import { stripLocalePrefix, useI18n } from '../i18n/I18nContext';
 import { useStore } from '../context/StoreContext';
 
 export const Header: React.FC = () => {
   const { lang, setLang, t, localePath } = useI18n();
   const { cartCount, setCartOpen, user, theme, toggleTheme } = useStore();
   const navigate = useNavigate();
+  const { pathname, search } = useLocation();
+  const cleanPath = stripLocalePrefix(pathname);
 
   const [openMega, setOpenMega] = useState<'coffee' | 'discover' | 'partners' | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -51,15 +53,15 @@ export const Header: React.FC = () => {
             </Link>
 
             <div className="relative" onMouseEnter={() => setOpenMega('coffee')}>
-              <button
-                type="button"
-                onClick={() => setOpenMega(openMega === 'coffee' ? null : 'coffee')}
-                className="flex items-center gap-1 whitespace-nowrap shrink-0 hover:text-[#00552B] dark:hover:text-[#C6A667] transition-colors py-2 cursor-pointer"
+              <Link
+                to={localePath('/shop')}
+                onClick={closeAll}
+                className="flex items-center gap-1 whitespace-nowrap shrink-0 hover:text-[#00552B] dark:hover:text-[#C6A667] transition-colors py-2"
                 aria-expanded={openMega === 'coffee'}
               >
                 <span>{t('Cà phê', 'Coffee')}</span>
                 <ChevronDown className="w-3.5 h-3.5 opacity-70" />
-              </button>
+              </Link>
             </div>
 
             <div className="relative" onMouseEnter={() => setOpenMega('discover')}>
@@ -231,6 +233,42 @@ export const Header: React.FC = () => {
           </div>
         </div>
 
+        {/* Always-Visible Product Category Quick-Access Bar */}
+        <div className="bg-[#003D25] text-[#F8F5EF] border-t border-white/10">
+          <nav
+            aria-label={t('Danh mục sản phẩm nhanh', 'Quick product categories')}
+            className="max-w-[1280px] mx-auto px-4 sm:px-6 flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1.5 text-xs"
+          >
+            {[
+              { path: '/coffee/roasted', vi: 'Cà phê Rang Xay', en: 'Roasted Coffee' },
+              { path: '/coffee/roasted-beans', vi: 'Cà phê Hạt Rang (kg)', en: 'Roasted Beans (kg)' },
+              { path: '/coffee/green-coffee', vi: 'Cà phê Nhân Xanh', en: 'Green Coffee' },
+              { path: '/coffee/instant', vi: 'Cà phê Hòa Tan', en: 'Instant Coffee' },
+              { path: '/coffee/gift-vouchers', vi: 'Gift Voucher', en: 'Gift Voucher' },
+              { path: '/shop', vi: 'Tất cả sản phẩm', en: 'All Products' },
+            ].map((cat) => {
+              const active =
+                cleanPath === cat.path ||
+                (cat.path === '/coffee/green-coffee' && cleanPath === '/shop' && search.includes('category=green_bean')) ||
+                (cat.path === '/shop' && cleanPath === '/shop' && !search.includes('category='));
+              return (
+                <Link
+                  key={cat.path}
+                  to={localePath(cat.path)}
+                  onClick={closeAll}
+                  className={`px-3 py-1 rounded-md whitespace-nowrap shrink-0 transition-colors ${
+                    active
+                      ? 'bg-[#C6A667] text-[#111111] font-bold'
+                      : 'text-[#F8F5EF]/85 hover:text-white hover:bg-white/10 font-medium'
+                  }`}
+                >
+                  {t(cat.vi, cat.en)}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
         {/* Desktop Search Bar Dropdown */}
         {searchOpen && (
           <div className="hidden lg:block border-t border-[#202020]/10 dark:border-white/10 bg-white dark:bg-[#16221C]">
@@ -270,9 +308,13 @@ export const Header: React.FC = () => {
           <div className="hidden lg:block border-t border-[#202020]/10 dark:border-white/10 bg-white dark:bg-[#16221C] shadow-lg">
             <div className="max-w-[1280px] mx-auto px-6 py-8 grid grid-cols-4 gap-8">
               <div>
-                <p className="text-xs font-semibold tracking-wider uppercase text-[#00552B] dark:text-[#C6A667] mb-3">
-                  {t('Cà Phê Rang Xay', 'Roasted Coffee')}
-                </p>
+                <Link
+                  to={localePath('/coffee/roasted')}
+                  onClick={closeAll}
+                  className="inline-flex items-center gap-1 text-xs font-semibold tracking-wider uppercase text-[#00552B] dark:text-[#C6A667] mb-3 hover:underline"
+                >
+                  {t('Cà Phê Rang Xay →', 'Roasted Coffee →')}
+                </Link>
                 <ul className="space-y-2 text-sm text-[#202020]/85 dark:text-[#F1EFEA]/85">
                   <li>
                     <Link to={localePath('/product/robusta-house-blend')} onClick={closeAll} className="hover:text-[#00552B]">
@@ -313,44 +355,59 @@ export const Header: React.FC = () => {
               </div>
 
               <div>
-                <p className="text-xs font-semibold tracking-wider uppercase text-[#00552B] dark:text-[#C6A667] mb-3">
-                  {t('Cà Phê Nhân Xanh (B2B)', 'Green Coffee Beans')}
-                </p>
+                <Link
+                  to={localePath('/coffee/green-coffee')}
+                  onClick={closeAll}
+                  className="inline-flex items-center gap-1 text-xs font-semibold tracking-wider uppercase text-[#00552B] dark:text-[#C6A667] mb-3 hover:underline"
+                >
+                  {t('Cà Phê Nhân Xanh →', 'Green Coffee Beans →')}
+                </Link>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-[#202020]/85 dark:text-[#F1EFEA]/85">
-                  <Link to={`${localePath('/coffee/green-beans')}?type=Robusta`} onClick={closeAll} className="hover:text-[#00552B]">
+                  <Link to={`${localePath('/coffee/green-coffee')}?type=Robusta`} onClick={closeAll} className="hover:text-[#00552B]">
                     Robusta
                   </Link>
-                  <Link to={`${localePath('/coffee/green-beans')}?screen=S14`} onClick={closeAll} className="hover:text-[#00552B]">
+                  <Link to={`${localePath('/coffee/green-coffee')}?screen=S14`} onClick={closeAll} className="hover:text-[#00552B]">
                     {t('Cỡ sàng S14', 'Screen S14')}
                   </Link>
-                  <Link to={`${localePath('/coffee/green-beans')}?type=Arabica`} onClick={closeAll} className="hover:text-[#00552B]">
+                  <Link to={`${localePath('/coffee/green-coffee')}?type=Arabica`} onClick={closeAll} className="hover:text-[#00552B]">
                     Arabica
                   </Link>
-                  <Link to={`${localePath('/coffee/green-beans')}?screen=S16`} onClick={closeAll} className="hover:text-[#00552B]">
+                  <Link to={`${localePath('/coffee/green-coffee')}?screen=S16`} onClick={closeAll} className="hover:text-[#00552B]">
                     {t('Cỡ sàng S16', 'Screen S16')}
                   </Link>
-                  <Link to={`${localePath('/coffee/green-beans')}?type=Culi`} onClick={closeAll} className="hover:text-[#00552B]">
+                  <Link to={`${localePath('/coffee/green-coffee')}?type=Culi`} onClick={closeAll} className="hover:text-[#00552B]">
                     {t('Culi (Hạt tròn)', 'Culi / Peaberry')}
                   </Link>
-                  <Link to={`${localePath('/coffee/green-beans')}?screen=S18`} onClick={closeAll} className="hover:text-[#00552B]">
+                  <Link to={`${localePath('/coffee/green-coffee')}?screen=S18`} onClick={closeAll} className="hover:text-[#00552B]">
                     {t('Cỡ sàng S18', 'Screen S18')}
                   </Link>
-                  <Link to={`${localePath('/coffee/green-beans')}?proc=NAT`} onClick={closeAll} className="hover:text-[#00552B]">
+                  <Link to={`${localePath('/coffee/green-coffee')}?proc=NAT`} onClick={closeAll} className="hover:text-[#00552B]">
                     {t('Sơ chế Khô (Natural)', 'Natural')}
                   </Link>
-                  <Link to={`${localePath('/coffee/green-beans')}?proc=HON`} onClick={closeAll} className="hover:text-[#00552B]">
+                  <Link to={`${localePath('/coffee/green-coffee')}?proc=HON`} onClick={closeAll} className="hover:text-[#00552B]">
                     {t('Sơ chế Mật ong (Honey)', 'Honey')}
                   </Link>
-                  <Link to={`${localePath('/coffee/green-beans')}?proc=CBU`} onClick={closeAll} className="hover:text-[#00552B] col-span-2">
+                  <Link to={`${localePath('/coffee/green-coffee')}?proc=CBU`} onClick={closeAll} className="hover:text-[#00552B] col-span-2">
                     {t('Chế biến ướt (Washed / CBU)', 'Washed / CBU')}
+                  </Link>
+                  <Link
+                    to={localePath('/coffee/green-beans')}
+                    onClick={closeAll}
+                    className="col-span-2 pt-2 mt-1 border-t border-[#202020]/10 dark:border-white/10 text-xs font-semibold text-[#00552B] dark:text-[#C6A667] hover:underline"
+                  >
+                    {t('Mở Ma trận Nhân xanh (27 SKU) →', 'Open 27-SKU Green Matrix →')}
                   </Link>
                 </div>
               </div>
 
               <div>
-                <p className="text-xs font-semibold tracking-wider uppercase text-[#00552B] dark:text-[#C6A667] mb-3">
-                  {t('Cà Phê Hòa Tan', 'Instant Coffee')}
-                </p>
+                <Link
+                  to={localePath('/coffee/instant')}
+                  onClick={closeAll}
+                  className="inline-flex items-center gap-1 text-xs font-semibold tracking-wider uppercase text-[#00552B] dark:text-[#C6A667] mb-3 hover:underline"
+                >
+                  {t('Cà Phê Hòa Tan →', 'Instant Coffee →')}
+                </Link>
                 <ul className="space-y-2 text-sm text-[#202020]/85 dark:text-[#F1EFEA]/85">
                   <li>
                     <Link to={localePath('/product/instant-silver-collection')} onClick={closeAll} className="hover:text-[#00552B]">
@@ -365,6 +422,11 @@ export const Header: React.FC = () => {
                   <li>
                     <Link to={localePath('/coffee/instant')} onClick={closeAll} className="hover:text-[#00552B]">
                       {t('Xem bộ sưu tập hòa tan', 'View Instant Coffee')}
+                    </Link>
+                  </li>
+                  <li className="pt-2 border-t border-[#202020]/10 dark:border-white/10">
+                    <Link to={localePath('/coffee/gift-vouchers')} onClick={closeAll} className="hover:text-[#00552B] font-semibold text-[#00552B] dark:text-[#C6A667]">
+                      {t('Thẻ Quà Tặng Gift Voucher (50k–1tr)', 'ROAR Gift Vouchers (50k–1M)')}
                     </Link>
                   </li>
                 </ul>
@@ -449,6 +511,11 @@ export const Header: React.FC = () => {
                       {t('Hướng Dẫn Pha Chế', 'Brewing Guide')}
                     </Link>
                   </li>
+                  <li>
+                    <Link to={localePath('/brewing-handbook')} onClick={closeAll} className="hover:text-[#00552B] dark:hover:text-[#C6A667] font-semibold text-[#00552B] dark:text-[#C6A667]">
+                      {t('Cẩm Nang Pha Chế (15 chuyên đề)', 'Brewing Handbook (15 Guides)')}
+                    </Link>
+                  </li>
                 </ul>
               </div>
 
@@ -456,13 +523,38 @@ export const Header: React.FC = () => {
                 <p className="text-xs font-semibold tracking-wider uppercase text-[#00552B] dark:text-[#C6A667] mb-3">
                   {t('Tri thức & Cộng đồng', 'Journal & Community')}
                 </p>
-                <ul className="space-y-2.5 text-sm text-[#202020]/85 dark:text-[#F1EFEA]/85">
+                <ul className="space-y-2 text-sm text-[#202020]/85 dark:text-[#F1EFEA]/85">
                   <li>
-                    <Link to={localePath('/journal')} onClick={closeAll} className="hover:text-[#00552B] dark:hover:text-[#C6A667]">
-                      {t('Tạp chí Cà Phê', 'Coffee Journal')}
+                    <Link to={localePath('/journal')} onClick={closeAll} className="font-semibold text-[#00552B] dark:text-[#C6A667] hover:underline">
+                      {t('Tất cả Tạp chí Cà Phê →', 'All Coffee Journal →')}
                     </Link>
                   </li>
                   <li>
+                    <Link to={`${localePath('/journal')}?category=${encodeURIComponent('Coffee processing')}`} onClick={closeAll} className="text-[13px] hover:text-[#00552B] dark:hover:text-[#C6A667]">
+                      {t('· Sơ chế & Chế biến', '· Coffee Processing')}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to={`${localePath('/journal')}?category=${encodeURIComponent('Coffee varieties')}`} onClick={closeAll} className="text-[13px] hover:text-[#00552B] dark:hover:text-[#C6A667]">
+                      {t('· Giống & Phân loại hạt', '· Coffee Varieties')}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to={`${localePath('/journal')}?category=${encodeURIComponent('Brewing techniques')}`} onClick={closeAll} className="text-[13px] hover:text-[#00552B] dark:hover:text-[#C6A667]">
+                      {t('· Kỹ thuật Pha chế', '· Brewing Techniques')}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to={`${localePath('/journal')}?category=${encodeURIComponent('Coffee knowledge')}`} onClick={closeAll} className="text-[13px] hover:text-[#00552B] dark:hover:text-[#C6A667]">
+                      {t('· Kiến thức Cà phê', '· Coffee Knowledge')}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to={`${localePath('/journal')}?category=${encodeURIComponent('Coffee origins')}`} onClick={closeAll} className="text-[13px] hover:text-[#00552B] dark:hover:text-[#C6A667]">
+                      {t('· Vùng Nguyên liệu', '· Coffee Origins')}
+                    </Link>
+                  </li>
+                  <li className="pt-1.5 border-t border-[#202020]/10 dark:border-white/10">
                     <Link to={localePath('/farm-membership')} onClick={closeAll} className="hover:text-[#00552B] dark:hover:text-[#C6A667]">
                       {t('Trang trại ROAR & Thành viên (Định hướng)', 'ROAR Coffee Farm & Membership')}
                     </Link>
@@ -597,11 +689,17 @@ export const Header: React.FC = () => {
                     <Link to={localePath('/coffee/roasted-beans')} onClick={closeAll} className="block py-1 font-medium text-[#00552B] dark:text-[#C6A667]">
                       {t('Cà phê Hạt rang (Sỉ/Lẻ theo kg)', 'Roasted Coffee Beans (Kg)')}
                     </Link>
-                    <Link to={localePath('/coffee/green-beans')} onClick={closeAll} className="block py-1">
-                      {t('Cà phê nhân xanh (S14/S16/S18)', 'Green Coffee Beans (27 SKUs)')}
+                    <Link to={localePath('/coffee/green-coffee')} onClick={closeAll} className="block py-1">
+                      {t('Cà phê nhân xanh (Theo kg)', 'Green Coffee Beans (Per kg)')}
+                    </Link>
+                    <Link to={localePath('/coffee/green-beans')} onClick={closeAll} className="block py-1 text-[#00552B] dark:text-[#C6A667]">
+                      {t('Ma trận Nhân xanh B2B (27 SKU)', 'B2B Green Matrix (27 SKUs)')}
                     </Link>
                     <Link to={localePath('/coffee/instant')} onClick={closeAll} className="block py-1">
                       {t('Cà phê hòa tan Silver & Gold', 'Instant Coffee Silver & Gold')}
+                    </Link>
+                    <Link to={localePath('/coffee/gift-vouchers')} onClick={closeAll} className="block py-1">
+                      {t('Thẻ quà tặng Gift Voucher', 'Gift Vouchers (50k–1M)')}
                     </Link>
                     <Link to={localePath('/signature-reserve')} onClick={closeAll} className="block py-1 font-medium text-[#00552B]">
                       Signature Reserve
@@ -639,9 +737,29 @@ export const Header: React.FC = () => {
                     <Link to={localePath('/brewing')} onClick={closeAll} className="block py-1">
                       {t('Hướng dẫn pha chế', 'Brewing Guide')}
                     </Link>
-                    <Link to={localePath('/journal')} onClick={closeAll} className="block py-1">
+                    <Link to={localePath('/brewing-handbook')} onClick={closeAll} className="block py-1 font-medium text-[#00552B] dark:text-[#C6A667]">
+                      {t('Cẩm nang pha chế (15 chuyên đề)', 'Brewing Handbook (15 Guides)')}
+                    </Link>
+                    <Link to={localePath('/journal')} onClick={closeAll} className="block py-1 font-medium">
                       {t('Tạp chí cà phê', 'Coffee Journal')}
                     </Link>
+                    <div className="pl-3 space-y-1.5 text-xs text-[#202020]/70 dark:text-[#F1EFEA]/70 border-l border-[#00552B]/25 dark:border-[#C6A667]/25">
+                      <Link to={`${localePath('/journal')}?category=${encodeURIComponent('Coffee processing')}`} onClick={closeAll} className="block py-0.5">
+                        {t('Sơ chế & Chế biến', 'Coffee Processing')}
+                      </Link>
+                      <Link to={`${localePath('/journal')}?category=${encodeURIComponent('Coffee varieties')}`} onClick={closeAll} className="block py-0.5">
+                        {t('Giống & Phân loại hạt', 'Coffee Varieties')}
+                      </Link>
+                      <Link to={`${localePath('/journal')}?category=${encodeURIComponent('Brewing techniques')}`} onClick={closeAll} className="block py-0.5">
+                        {t('Kỹ thuật Pha chế', 'Brewing Techniques')}
+                      </Link>
+                      <Link to={`${localePath('/journal')}?category=${encodeURIComponent('Coffee knowledge')}`} onClick={closeAll} className="block py-0.5">
+                        {t('Kiến thức Cà phê', 'Coffee Knowledge')}
+                      </Link>
+                      <Link to={`${localePath('/journal')}?category=${encodeURIComponent('Coffee origins')}`} onClick={closeAll} className="block py-0.5">
+                        {t('Vùng Nguyên liệu', 'Coffee Origins')}
+                      </Link>
+                    </div>
                     <Link to={localePath('/farm-membership')} onClick={closeAll} className="block py-1">
                       {t('Trang trại ROAR & Thành viên', 'ROAR Farm & Membership')}
                     </Link>

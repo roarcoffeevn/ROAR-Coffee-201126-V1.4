@@ -934,7 +934,7 @@ function seedInitialData(): void {
       'N/A',
       'Pending confirmed sheet',
       'Net weight & ingredients pending final label confirmation',
-      'product_instant_silver_gold',
+      '/assets/instant/instant-silver.jpg',
       1
     );
 
@@ -978,7 +978,7 @@ function seedInitialData(): void {
       'N/A',
       'Pending confirmed sheet',
       'Net weight & ingredients pending final label confirmation',
-      'product_instant_silver_gold',
+      '/assets/instant/instant-gold.jpg',
       1
     );
 
@@ -1257,7 +1257,7 @@ function seedInitialData(): void {
       'In modern green coffee trading, post-harvest processing directly shapes cup clarity, roast behavior, and commercial consistency. Across the ROAR COFFEE catalog, CBU serves as the official commercial designation for Washed Process coffee alongside Natural and Honey.\n\nBy depulping ripe cherries promptly, controlling mucilage fermentation, washing cleanly, and drying to stable storage moisture, CBU lots deliver clean visual uniformity and predictable roasting curves.\n\nWithin the ROAR COFFEE B2B matrix, CBU is configurable across Robusta (RO), Arabica (AR), and Culi / Peaberry (CU) in screen sizes S14, S16, and S18.',
       'ROAR Coffee Editorial',
       5,
-      'product_green_coffee_beans',
+      'journal_cbu_washed',
       1
     );
 
@@ -1273,7 +1273,7 @@ function seedInitialData(): void {
       'Culi — known internationally as Peaberry — is frequently misunderstood as a separate coffee species alongside Arabica or Robusta. Botanically, however, Culi is a bean morphology classification.\n\nWhereas a normal coffee cherry develops two flat-sided seeds facing one another, a small natural percentage of cherries develop a single round seed that fills the entire cavity. Because of its spherical density, Culi behaves differently during screen grading (S14, S16, S18) and heat transfer in the roasting drum.',
       'ROAR Coffee Editorial',
       4,
-      'product_robusta_house',
+      'journal_culi_peaberry',
       1
     );
 
@@ -1289,7 +1289,7 @@ function seedInitialData(): void {
       'Whether brewing with a traditional brass Vietnamese Phin or an Italian espresso machine, balanced extraction depends on dose, water volume, grind distribution, and temperature stability.\n\nFor Vietnamese Phin: begin with a 20g reference dose, wet evenly with 25–30ml water for a 30-second bloom, then add 50–70ml hot water for a 4–5 minute drawdown.\n\nFor Espresso: start from an 18g dose yielding 36g liquid beverage in 25–30 seconds at 90–94°C, then refine grind size by taste.',
       'ROAR Barista Lab',
       6,
-      'hero_roar_coffee',
+      'journal_phin_espresso',
       1
     );
   }
@@ -1441,7 +1441,7 @@ function seedInitialData(): void {
         'Thẻ quà tặng ROAR COFFEE® mệnh giá 50.000₫ là lời chúc năng lượng tinh tế cho bạn bè, đồng nghiệp. Áp dụng mua mọi dòng cà phê rang xay, cà phê hạt rang theo kg, cà phê hòa tan và bộ quà tặng tại website ROAR COFFEE®.',
       descEn:
         'The 50,000 VND ROAR COFFEE® Gift Voucher is a thoughtful daily treat for friends and colleagues. Redeemable across roasted coffee, whole beans by kg, instant gold, and gift sets.',
-      imageKey: 'hero-roast',
+      imageKey: '/assets/vouchers/gift-voucher-50k.jpg',
     },
     {
       slug: 'gift-voucher-100k',
@@ -1457,7 +1457,7 @@ function seedInitialData(): void {
         'Thẻ quà tặng ROAR COFFEE® mệnh giá 100.000₫ phù hợp làm quà sinh nhật, tri ân khách hàng hoặc phần thưởng nội bộ. Có thể dùng trực tiếp khi thanh toán hoặc nạp quy đổi vào Ví Thành viên ROAR.',
       descEn:
         'Ideal for birthdays, client appreciation, or team rewards. Use directly at checkout or redeem into a ROAR Member Wallet.',
-      imageKey: 'signature-reserve',
+      imageKey: '/assets/vouchers/gift-voucher-100k.jpg',
     },
     {
       slug: 'gift-voucher-500k',
@@ -1473,7 +1473,7 @@ function seedInitialData(): void {
         'Thẻ quà tặng ROAR COFFEE® mệnh giá 500.000₫ được thiết kế hộp phong bì đen huyền ép kim vàng champagne. Thích hợp tặng đối tác, cấp trên hoặc người yêu cà phê đặc sản Việt Nam.',
       descEn:
         'Presented in a signature matte obsidian & champagne-gold sleeve, the 500,000 VND Gift Voucher is crafted for partners, executives, and specialty coffee lovers.',
-      imageKey: 'signature-reserve',
+      imageKey: '/assets/vouchers/gift-voucher-500k.jpg',
     },
     {
       slug: 'gift-voucher-1m',
@@ -1489,7 +1489,7 @@ function seedInitialData(): void {
         'Thẻ quà tặng VIP ROAR COFFEE® mệnh giá 1.000.000₫ dành cho quà tặng doanh nghiệp, lễ Tết và tri ân đối tác chiến lược. Hạn sử dụng 12 tháng, áp dụng toàn bộ danh mục bán lẻ, hạt rang theo kg và quà tặng cao cấp.',
       descEn:
         'Our flagship 1,000,000 VND VIP Gift Voucher tailored for corporate gifting, festive occasions, and strategic partners. Valid for 12 months across all retail, kg beans, and reserve collections.',
-      imageKey: 'signature-reserve',
+      imageKey: '/assets/vouchers/gift-voucher-1m.jpg',
     },
   ];
 
@@ -1532,11 +1532,11 @@ function seedInitialData(): void {
     }
   }
 
-  // Idempotent rich Journal Articles (replaceable images in CMS)
+  // Idempotent rich Journal Articles (replaceable images in CMS) — strictly mapped to the 5 official categories
   const extraJournalArticles = [
     {
       slug: 'nghe-thuat-pha-phin-viet-nam-chuan-roar',
-      category: 'Brewing',
+      category: 'Brewing techniques',
       tags: ['Pha Phin', 'Robusta', 'Văn hóa cà phê'],
       titleVi: 'Nghệ Thuật Pha Phin Việt Nam: 5 Bí Quyết Chiết Xuất Đậm Sâu Không Chát',
       titleEn: 'The Art of Vietnamese Phin Brewing: 5 Secrets for Rich, Clean Extraction',
@@ -1548,11 +1548,11 @@ function seedInitialData(): void {
         'Vietnamese Phin brewing is a mindful ritual. Start with 100% pure Medium-Dark roasted coffee such as ROAR Lion or Robusta S18.\n\n1. Pre-warm the Phin with hot water and dose 25g medium-coarse ground coffee.\n2. Bloom with 25ml water at 92–95°C for 30 seconds.\n3. Gently rest the gravity press and pour 65ml hot water.\n4. Aim for 1 drop per second over 4–5 minutes for syrupy body and lingering cacao sweetness.',
       author: 'ROAR Head Barista',
       readMinutes: 5,
-      imageKey: 'brewing-phin',
+      imageKey: 'journal_phin_ritual',
     },
     {
       slug: 'hanh-trinh-arabica-cau-dat-1500m',
-      category: 'Origins',
+      category: 'Coffee origins',
       tags: ['Cầu Đất', 'Arabica', 'Vùng trồng'],
       titleVi: 'Cầu Đất 1.500m: Vì Sao Sương Mù Đà Lạt Tạo Nên Hạt Arabica Hương Hoa Trứ Danh?',
       titleEn: 'Cầu Đất 1,500m: How Đà Lạt Mist Crafts Iconic Floral Arabica',
@@ -1564,11 +1564,11 @@ function seedInitialData(): void {
         'Rising above 1,500m in Lâm Đồng, Cầu Đất is Vietnam’s premier Arabica terroir. Cool 15–22°C days slow cherry ripening, building dense beans rich in aromatic precursors.\n\nROAR COFFEE® selects 95%+ red-ripe cherries for our Arabica S18 and Arabica S18 CBU lots, washed cleanly to preserve jasmine blossom, ripe citrus, and honeyed sweetness.',
       author: 'ROAR Sourcing Team',
       readMinutes: 6,
-      imageKey: 'origin-highlands',
+      imageKey: 'journal_caudat_arabica',
     },
     {
       slug: 'phan-biet-natural-honey-va-cbu-washed',
-      category: 'Quality',
+      category: 'Coffee processing',
       tags: ['CBU Washed', 'Honey', 'Natural', 'Chế biến'],
       titleVi: 'Phân Biệt 3 Phương Pháp Chế Biến: Natural, Honey & Chế Biến Ướt (CBU)',
       titleEn: 'Natural vs. Honey vs. Washed (CBU): How Processing Shapes Your Cup',
@@ -1580,11 +1580,11 @@ function seedInitialData(): void {
         '• Natural: Whole ripe cherries dried on raised beds for 18–25 days, producing heavy body and jammy fruit sweetness.\n• Honey Process: Pulped with natural mucilage intact for honeyed caramel balance.\n• Full Washed (CBU): Fermented and thoroughly washed for crisp clarity, clean aromatics, and silky finish — the backbone of ROAR Espresso & Signature Reserve.',
       author: 'ROAR Q-Grader Lab',
       readMinutes: 5,
-      imageKey: 'green-beans',
+      imageKey: 'journal_coffee_processes',
     },
     {
       slug: 'bi-quyet-chon-hat-rang-s18-cho-quan-espresso',
-      category: 'B2B & HORECA',
+      category: 'Coffee knowledge',
       tags: ['Hạt rang S18', 'Espresso', 'Quán cà phê', 'Giá sỉ kg'],
       titleVi: 'Bí Quyết Chọn Hạt Rang S18 & Tối Ưu Cost Ly Cho Chủ Quán Espresso',
       titleEn: 'Choosing Screen 18 Roasted Beans & Optimizing Espresso Bar Cost',
@@ -1596,11 +1596,11 @@ function seedInitialData(): void {
         'Batch-to-batch consistency makes or breaks a café. ROAR Screen 18 (7.1mm) roasted beans ensure uniform heat transfer and zero scorching.\n\nPopular café blend ratios:\n• Classic Iced Milk Espresso: 70% Robusta S18 CBU + 30% Arabica S18.\n• Modern Latte & Americano: 50% Arabica S18 CBU + 50% Robusta S18 Honey.\nOur automatic 5-tier kg pricing (1kg up to ≥100kg wholesale) keeps your per-cup cost transparent and predictable.',
       author: 'ROAR HORECA Advisory',
       readMinutes: 6,
-      imageKey: 'hero-roast',
+      imageKey: 'journal_s18_roastery',
     },
     {
       slug: '7-ca-tinh-roar-va-gu-thuong-thuc-cua-ban',
-      category: 'Culture',
+      category: 'Coffee knowledge',
       tags: ['7 Cá tính', 'Signature Reserve', 'Gu uống'],
       titleVi: '7 Cá Tính ROAR COFFEE®: Bạn Thuộc Gu Thưởng Thức Nào?',
       titleEn: 'The 7 ROAR Personalities: Which Coffee Archetype Matches Your Palate?',
@@ -1612,11 +1612,11 @@ function seedInitialData(): void {
         'Every coffee drinker carries a distinct rhythm. ROAR COFFEE® maps 7 wildlife archetypes directly to flavor profiles:\n\n• Tiger & Lion: Bold, commanding body for traditional Phin and iced milk coffee.\n• Fox & Eagle: Balanced, aromatic finesse for Espresso and Pour Over.\n• Wolf & Owl: Effortless clarity for busy mornings and late-night creators.\n• Black Panther (Signature Reserve): Our flagship 60% Robusta – 20% Culi – 20% Washed Arabica masterpiece.',
       author: 'ROAR Editorial',
       readMinutes: 4,
-      imageKey: 'signature-reserve',
+      imageKey: 'journal_tasting_archetypes',
     },
     {
       slug: 'van-hoa-cold-brew-va-qua-tang-ca-phe-cao-cap',
-      category: 'Lifestyle',
+      category: 'Coffee knowledge',
       tags: ['Cold Brew', 'Quà tặng', 'Gift Voucher'],
       titleVi: 'Cold Brew 16 Giờ & Xu Hướng Quà Tặng Cà Phê Cao Cấp Cho Doanh Nghiệp',
       titleEn: '16-Hour Cold Brew & The Rise of Executive Coffee Gifting',
@@ -1625,10 +1625,175 @@ function seedInitialData(): void {
       contentVi:
         'Ủ lạnh (Cold Brew) ở nhiệt độ mát trong 14–16 giờ giúp chiết xuất trọn vẹn vị ngọt tự nhiên và hương hoa trái của Arabica S18 mà giảm tới 60% độ chua gắt. Kết hợp cùng một lát cam vàng hoặc mật ong, đây là thức uống giải nhiệt tinh tế cho ngày làm việc năng suất.\n\nBên cạnh đó, xu hướng tặng quà doanh nghiệp đang dịch chuyển sang những trải nghiệm thưởng thức thực thụ: Hộp thiếc Signature Reserve đen huyền ép kim vàng hoặc Thẻ Quà Tặng ROAR Gift Voucher (50k – 100k – 500k – 1.000.000₫) giúp người nhận tự do chọn đúng gu cà phê yêu thích.',
       contentEn:
-        'Steeping coarse Arabica S18 in cold filtered water for 14–16 hours unlocks velvety sweetness while reducing harsh acidity by up to 60%.\n\nMeanwhile, executive gifting is shifting toward experiential rituals: obsidian-and-gold Signature Reserve tins or ROAR Gift Vouchers (50k to 1,000,000 VND) let recipients choose their exact roast and brew style.',
+        'Steeping coarse Arabica S18 in cold filtered water for 14–16 hours unlocks velvety sweetness while reducing harsh acidity by up to 60%.\n\nMeanwhile, executive gifting is shifting toward experiential rituals: obsidian-and-gold Signature Reserve canisters or ROAR Gift Vouchers (50k to 1,000,000 VND) let recipients choose their exact roast and brew style.',
       author: 'ROAR Lifestyle Desk',
       readMinutes: 5,
-      imageKey: 'origin-highlands',
+      imageKey: 'journal_coldbrew_gifting',
+    },
+    // +2 New Articles for 'Coffee processing'
+    {
+      slug: 'nhiet-do-va-do-am-len-men-hat-nhan-xanh',
+      category: 'Coffee processing',
+      tags: ['Lên men', 'Độ ẩm 10–12%', 'Nhân xanh', 'Phơi giàn'],
+      titleVi: 'Kiểm Soát Nhiệt Độ Lên Men & Độ Ẩm 10–12% Khi Phơi Giàn Nhân Xanh',
+      titleEn: 'Controlling Fermentation Temperature & 10–12% Moisture on Raised Drying Beds',
+      excerptVi: 'Vì sao độ ẩm vượt ngưỡng 12.5% làm nhân xanh nhanh lão hóa và bí quyết phơi giàn nâng cao giữ trọn đường tự nhiên trong hạt.',
+      excerptEn: 'Why moisture above 12.5% accelerates green bean aging, and how raised-bed drying preserves natural sugars and aromatic longevity.',
+      contentVi:
+        'Trong sản xuất cà phê nhân xanh chất lượng cao, thu hái quả chín đỏ mới chỉ là một nửa chặng đường. Quá trình lên men kiểm soát (18–36 giờ ở nhiệt độ 22–28°C) và giai đoạn làm khô quyết định độ ổn định của lô hàng suốt 12 tháng bảo quản.\n\nTại các trạm sơ chế đối tác của ROAR COFFEE®, hạt sau lên men được phơi trên giàn lưới nâng cao cách mặt đất ít nhất 80cm giúp luồng gió đối lưu đều hai mặt và tránh hoàn toàn ẩm đất.\n\n• Độ ẩm mục tiêu: Khóa chuẩn 10.5% – 12.0% bằng máy đo chuyên dụng.\n• Đảo hạt định kỳ 2 giờ/lần trong khung giờ nắng cao điểm để tránh nứt vỏ trấu.\n• Sau khi đạt chuẩn ẩm, lô hàng được ủ nghỉ trong bao bảo quản kín 14–21 ngày trước khi xát vỏ lụa và phân sàng S14/S16/S18.',
+      contentEn:
+        'Picking 95%+ ripe cherries is only half the journey in specialty-grade green coffee production. Controlled fermentation (18–36 hours at 22–28°C) and slow drying determine a lot’s cup stability over 12 months of warehousing.\n\nAt ROAR COFFEE® partner stations, parchment and whole cherries dry on elevated mesh beds at least 80cm off the ground for clean airflow and zero soil contamination.\n\n• Target Moisture: Calibrated strictly to 10.5%–12.0%.\n• Turning Schedule: Raked every 2 hours during peak sun to ensure uniform water activity.\n• Resting Phase: Stored in hermetic resting bags for 14–21 days prior to hulling and S14/S16/S18 grading.',
+      author: 'ROAR Processing Lab',
+      readMinutes: 6,
+      imageKey: 'journal_coffee_processes',
+    },
+    {
+      slug: 'quy-trinh-tach-vo-xat-nhot-cbu-khep-kin',
+      category: 'Coffee processing',
+      tags: ['CBU Washed', 'Tách vỏ', 'Nước sạch', 'Sơ chế ướt'],
+      titleVi: 'Từ Quả Chín Đỏ Đến Nhân Xanh CBU: Vì Sao 24 Giờ Đầu Quyết Định Độ Sạch Vị?',
+      titleEn: 'Cherry to CBU Green Bean: Why the First 24 Hours Define Cup Clarity',
+      excerptVi: 'Cận cảnh quy trình phân tách tỷ trọng, xát vỏ thịt tươi trong ngày và rửa sạch nhớt giúp Robusta & Arabica đạt độ trong trẻo tinh khiết.',
+      excerptEn: 'Inside same-day density sorting, fresh cherry pulping, and clean-water washing that eliminate defects and elevate cup purity.',
+      contentVi:
+        'Khái niệm "24 giờ vàng" trong chế biến ướt (CBU — Chế Biến Ướt) bắt đầu ngay khi bao quả chín đỏ rời rẫy. Nếu quả bị ủ đống qua đêm trong bao tải, quá trình lên men yếm khí mất kiểm soát sẽ sinh ra mùi chua giấm hoặc mùi lên men quá chín.\n\n1. Rửa tuyển nổi tỷ trọng (Float Separation): Toàn bộ quả chín được đưa qua bể nước sạch trong vòng 4–6 giờ sau thu hoạch để loại bỏ quả khô, quả lép và tạp chất.\n2. Xát vỏ thịt tươi ngay trong đêm: Lớp vỏ ngoài được tách bỏ bằng máy đĩa chính xác không làm dập nhân thóc.\n3. Rửa sạch nhớt (Washing Channels): Sau 16–24 giờ phân hủy lớp nhớt đường tự nhiên, hạt thóc được rửa nhiều lần bằng nước sạch trước khi phơi khô hoàn toàn.',
+      contentEn:
+        'The golden 24-hour window in Full Washed (CBU) processing begins the moment cherries leave the harvest basket. Leaving fresh cherries stacked in sacks overnight triggers uncontrolled anaerobic heat and sour off-flavors.\n\n1. Water Density Floatation: Within 4–6 hours of picking, cherries enter clean floatation tanks to skim out under-ripe floaters and twigs.\n2. Same-Night Pulping: Disc pulpers strip the fruit skin cleanly without nicking the fragile parchment.\n3. Clean Channel Washing: Following 16–24 hours of controlled mucilage breakdown, parchment is rinsed crystal clear before raised-bed drying.',
+      author: 'ROAR Quality Control',
+      readMinutes: 5,
+      imageKey: 'journal_cbu_washed',
+    },
+    // +2 New Articles for 'Coffee varieties'
+    {
+      slug: 'robusta-tr4-tr9-va-arabica-catimor-bourbon-viet-nam',
+      category: 'Coffee varieties',
+      tags: ['TR4', 'TR9', 'Catimor', 'Bourbon', 'Giống cà phê'],
+      titleVi: 'Giải Mã Các Giống Cà Phê Chủ Lực Tại Việt Nam: Robusta TR4/TR9, Catimor & Bourbon',
+      titleEn: 'Decoding Vietnam’s Key Coffee Cultivars: Robusta TR4/TR9, Catimor & Bourbon',
+      excerptVi: 'Đặc điểm sinh học, kích thước nhân, năng suất và cấu trúc hương vị riêng biệt của những giống cà phê làm nên thương hiệu cà phê Việt.',
+      excerptEn: 'Botanical traits, bean density, and signature flavor architecture behind Vietnam’s most celebrated Robusta and Arabica cultivars.',
+      contentVi:
+        'Không phải mọi hạt Robusta hay Arabica đều mang hương vị giống nhau. Tại Việt Nam, bức tranh di truyền cây cà phê vô cùng phong phú:\n\n• Robusta TR4 & TR9 (Viện Eakmat): Hạt to tròn đồng đều (tỷ lệ đạt sàng S16–S18 rất cao), hàm lượng đường và lipid dồi dào cho vị sô-cô-la sánh đậm khi rang chuẩn.\n• Arabica Catimor: Giống chủ lực tại Cầu Đất và Tây Bắc, kháng gỉ sắt tốt, cân bằng hài hòa giữa độ chua cam chanh sáng và thân vị caramel.\n• Arabica Bourbon & Typica: Sản lượng khiêm tốn ở độ cao >1.500m Lâm Đồng nhưng mang nốt hương hoa nhài, trà trắng và hậu vị mật ong cực kỳ tinh tế.',
+      contentEn:
+        'Not all Robusta or Arabica harvests taste the same—cultivar genetics lay the structural foundation of every roast:\n\n• Robusta TR4 & TR9 (Eakmat Clones): Broad, dense cherries yielding high Screen 16–18 percentages with rich lipids and deep dark-chocolate crema.\n• Arabica Catimor: Backbone of Cầu Đất and Northwest Vietnam, pairing leaf-rust resilience with vibrant citrus sparkle and sweet caramel body.\n• Bourbon & Typica: Rare heirloom lots grown above 1,500m in Lâm Đồng prized for jasmine florals, white tea clarity, and lingering wildflower honey.',
+      author: 'ROAR Agronomy Desk',
+      readMinutes: 6,
+      imageKey: 'journal_culi_peaberry',
+    },
+    {
+      slug: 'tieu-chuan-sang-s14-s16-s18-trong-thuong-mai',
+      category: 'Coffee varieties',
+      tags: ['S14', 'S16', 'S18', 'Phân loại hạt', 'B2B'],
+      titleVi: 'Cỡ Sàng S14, S16, S18 (5.5mm – 7.1mm): Hiểu Đúng Để Chọn Hạt Rang & Nhân Xanh Chuẩn',
+      titleEn: 'Screen Sizes S14, S16 & S18 (5.5mm–7.1mm): How Grading Impacts Roasting',
+      excerptVi: 'Kích thước lỗ sàng tiêu chuẩn quốc tế ảnh hưởng trực tiếp đến sự truyền nhiệt trong trống rang, tỷ lệ đồng đều và cấu trúc giá thành.',
+      excerptEn: 'Why standardized millimeter screen grading governs drum heat transfer, batch uniformity, and wholesale roast economics.',
+      contentVi:
+        'Trong thương mại cà phê nhân xanh và hạt rang B2B, ký hiệu S14, S16 hay S18 là đơn vị đo kích thước lỗ sàng tròn theo hệ 1/64 inch (Screen Number):\n\n• Sàng S14 (5.5mm): Hạt nhỏ hơn nhưng mật độ cứng chắc, truyền nhiệt nhanh, thường dùng tối ưu chi phí cho các dòng phối trộn hòa tan hoặc rang xay phổ thông.\n• Sàng S16 (6.3mm): Tiêu chuẩn thương mại phổ biến nhất toàn cầu, cân bằng giữa hiệu suất kinh tế và độ đồng đều khi rang công suất lớn.\n• Sàng S18 (7.1mm): Tuyển chọn những hạt to đều vượt trội (chỉ chiếm tỷ lệ chọn lọc cao của mùa vụ), cho khả năng chín đều từ tâm ra vỏ và lớp crema dày đẹp lý tưởng cho Espresso & Phin cao cấp.',
+      contentEn:
+        'Across commercial green and roasted trading, S14, S16, and S18 denote aperture diameter measured in 1/64ths of an inch:\n\n• Screen 14 (5.5mm): Compact, dense beans that conduct heat quickly—often deployed in high-efficiency commercial and instant blends.\n• Screen 16 (6.3mm): The global commercial workhorse balancing roast consistency and cost efficiency.\n• Screen 18 (7.1mm+): Top-tier jumbo screening prized by ROAR Espresso and specialty cafés for uniform heat penetration, zero scorching, and lustrous crema.',
+      author: 'ROAR Roastery Engineering',
+      readMinutes: 5,
+      imageKey: 'journal_s18_roastery',
+    },
+    // +2 New Articles for 'Brewing techniques'
+    {
+      slug: 'ty-le-bloom-chiet-xuat-va-can-bang-do-chua-ngot',
+      category: 'Brewing techniques',
+      tags: ['Bloom', 'Pour Over', 'Chiết xuất', 'Độ mịn'],
+      titleVi: 'Kỹ Thuật Ủ Bloom 30–45 Giây & Điều Chỉnh Độ Mịn Để Hết Chua Gắt Khi Pha Thủ Công',
+      titleEn: 'Mastering the 30–45s Bloom & Grind Calibration for Balanced Manual Pour Over',
+      excerptVi: 'Hiểu cơ chế thoát khí CO2 từ cà phê rang mới và quy tắc chỉnh cỡ xay 2 nấc giúp tách V60 hoặc Kalita ngọt tròn không bị chát.',
+      excerptEn: 'Understanding CO2 degassing in fresh roasts and two-click grind adjustments to fix sour under-extraction or bitter channels.',
+      contentVi:
+        'Nếu ly Pour Over (V60/Kalita) của bạn có vị chua gắt thiếu ngọt hoặc nhanh loãng, nguyên nhân 80% nằm ở khâu ủ bloom và cỡ xay chưa khớp:\n\n1. Ủ Bloom đúng lượng: Rót lượng nước gấp 2–2.5 lần khối lượng bột (vd: 45g nước cho 18g cà phê) ở 92–94°C, lắc nhẹ phễu để làm ướt toàn bộ bột và chờ 35–40 giây cho khí CO2 thoát hết.\n2. Quy tắc đọc vị để chỉnh cỡ xay:\n   • Nếu tách bị chua gắt, nước chảy quá nhanh dưới 2 phút → Xay MỊN hơn 1–2 nấc.\n   • Nếu tách bị đắng khé, nghẹt dòng chảy trên 3 phút 30 giây → Xay THÔ hơn 1–2 nấc.\nÁp dụng với ROAR Arabica Selection rang tươi, bạn sẽ thu được tách cà phê trong trẻo với hậu vị mật ong rõ nét.',
+      contentEn:
+        'When manual Pour Over tastes sharply sour or hollow, 80% of the cause traces back to skipped CO2 bloom or mismatched grind size:\n\n1. Wetting & Bloom: Pour 2–2.5x water to coffee weight (e.g., 45g water for 18g dose) at 92–94°C, swirl gently, and rest 35–40 seconds until bubbling subsides.\n2. Dialing In by Taste:\n   • Sharp, thin, under 2:00 drawdown → Grind 1–2 clicks FINER.\n   • Dry, harsh bitterness, over 3:30 drawdown → Grind 1–2 clicks COARSER.\nPaired with freshly roasted ROAR Arabica Selection, this calibration unlocks crisp citrus sweetness and a silky honeyed finish.',
+      author: 'ROAR Head Barista',
+      readMinutes: 5,
+      imageKey: 'journal_phin_ritual',
+    },
+    {
+      slug: 'kien-truc-tang-huong-espresso-crema-va-ristretto',
+      category: 'Brewing techniques',
+      tags: ['Espresso', 'Ristretto', 'Lungo', 'Crema'],
+      titleVi: 'Phân Biệt Ristretto, Espresso & Lungo: Cách Thời Gian Chiết Xuất Định Hình Hậu Vị',
+      titleEn: 'Ristretto vs. Espresso vs. Lungo: How Yield Ratios Shape Sweetness & Body',
+      excerptVi: 'Cùng một liều bột 18g dưới áp suất 9 bar, việc dừng máy ở giây thứ 20, 28 hay 36 sẽ tạo ra ba cấu trúc hương vị hoàn toàn khác biệt.',
+      excerptEn: 'From one 18g basket at 9 bars, stopping extraction at 20s, 28s, or 36s produces three completely different flavor architectures.',
+      contentVi:
+        'Trong chiết xuất áp suất cao 9 bar, các nhóm hợp chất hương vị tan vào nước theo thứ tự thời gian rõ rệt: Axit hữu cơ và tinh dầu thơm ra trước (giây 5–15), đường caramel ra giữa (giây 15–25), và các chất đắng tannin/caffeine hòa tan mạnh ở giai đoạn cuối.\n\n• Ristretto (Tỷ lệ 1:1.5 — 18g bột thu 27g cốt trong 20–24 giây): Ngọt đậm đặc như mật, hương sô-cô-la cô đặc, hoàn hảo cho Cortado và Flat White.\n• Espresso Chuẩn (Tỷ lệ 1:2 — 18g thu 36g cốt trong 26–30 giây): Cấu trúc cân bằng vàng giữa độ sánh, crema hổ phách và hậu ngọt kéo dài — lý tưởng cho ROAR Espresso (Cáo) & Espresso Gold (Đại Bàng).\n• Lungo (Tỷ lệ 1:3 — 18g thu 54g cốt): Thanh nhẹ hơn, cường độ caffeine trích ly cao hơn nhưng cần kiểm soát cỡ xay thô nhẹ để không bị chát.',
+      contentEn:
+        'Under 9 bars of espresso pressure, flavor compounds dissolve sequentially: bright organic acids and aromatics extract first (5–15s), caramelized sugars follow (15–25s), and heavier bitter polyphenols emerge last.\n\n• Ristretto (1:1.5 ratio — 18g in, 27g out in 20–24s): Syrupy, intense cacao sweetness—ideal for Cortados and Flat Whites.\n• Classic Espresso (1:2 ratio — 18g in, 36g out in 26–30s): The golden equilibrium of tiger-striped crema, sweetness, and length—tailored for ROAR Fox & Eagle blends.\n• Lungo (1:3 ratio — 18g in, 54g out): Longer, tea-like body; grind slightly coarser to keep the finish clean and sweet.',
+      author: 'ROAR Espresso Bar Team',
+      readMinutes: 6,
+      imageKey: 'journal_phin_espresso',
+    },
+    // +2 New Articles for 'Coffee knowledge'
+    {
+      slug: 'phan-ung-maillard-va-first-crack-trong-rang-ca-phe',
+      category: 'Coffee knowledge',
+      tags: ['Maillard', 'First Crack', 'Rang cà phê', 'Agtron'],
+      titleVi: 'Phản Ứng Maillard & Tiếng Nổ First Crack: Điều Gì Xảy Ra Bên Trong Trống Rang?',
+      titleEn: 'The Maillard Reaction & First Crack: What Happens Inside the Roasting Drum?',
+      excerptVi: 'Khám phá 3 giai đoạn hóa học biến hạt nhân xanh mùi cỏ ngái thành hàng trăm hợp chất hương sô-cô-la, hạt dẻ và caramel.',
+      excerptEn: 'Inside the thermal chemistry that transforms grassy green beans into hundreds of cacao, hazelnut, and caramel aromatics.',
+      contentVi:
+        'Cà phê nhân xanh vốn gần như không có mùi thơm cà phê quen thuộc. Phép màu chỉ xảy ra khi hạt đi qua 3 pha nhiệt độ chính xác bên trong trống rang:\n\n1. Pha làm khô (Drying Phase · đến ~150°C): Nước bên trong hạt bốc hơi, hạt chuyển màu từ xanh ngọc sang vàng nhạt và tỏa hương bánh mì nướng.\n2. Pha Maillard & Caramel hóa (150°C – 195°C): Axit amin phản ứng với đường tạo nên hơn 800 hợp chất thơm (hạt dẻ rang, caramel, bơ, mật mía).\n3. Tiếng nổ First Crack (~196°C – 202°C): Áp suất hơi nước phá vỡ cấu trúc tế bào tạo tiếng nổ giòn như bắp rang. Thời gian phát triển sau First Crack (Development Time Ratio ~15–22%) chính là bí quyết để thợ rang ROAR COFFEE® định hình độ sáng thanh cho Arabica hay độ đậm sánh cho Robusta.',
+      contentEn:
+        'Raw green beans carry almost none of the aromas we associate with brewed coffee. That transformation unfolds across three thermal phases inside the drum:\n\n1. Drying Phase (up to ~150°C): Internal moisture evaporates as beans turn from jade green to pale straw, smelling of toasted grain.\n2. Maillard & Caramelization (150°C–195°C): Amino acids and sugars recombine into 800+ volatile aromatics—roasted hazelnut, toffee, and cocoa.\n3. First Crack (~196°C–202°C): Internal steam pressure fractures cell walls with an audible snap. Controlling the post-crack Development Time Ratio (15–22%) lets ROAR roasters tune crisp brightness or velvet espresso body.',
+      author: 'ROAR Head Roaster',
+      readMinutes: 6,
+      imageKey: 'product_roasting_drum_clean',
+    },
+    {
+      slug: 'nhan-dien-ca-phe-rang-moc-100-phan-tram',
+      category: 'Coffee knowledge',
+      tags: ['Rang mộc', 'Nguyên chất', 'Sức khỏe', 'Kiến thức'],
+      titleVi: '4 Dấu Hiệu Nhận Biết Cà Phê Rang Mộc 100% Không Tẩm Bơ Hóa Chất',
+      titleEn: '4 Signs of 100% Pure Roasted Coffee With Zero Artificial Additives',
+      excerptVi: 'Từ độ tơi nhẹ của bột khô, lớp bọt tự nhiên khi rót nước sôi đến cảm giác thanh nhẹ ở cổ họng sau khi uống.',
+      excerptEn: 'From dry powder lightness and natural bloom foam to clean aftertaste without sticky chemical residue.',
+      contentVi:
+        'Người tiêu dùng thông thái ngày càng ưu tiên cà phê rang mộc nguyên chất để bảo vệ sức khỏe và cảm nhận đúng hương vị tự nhiên của hạt. Dưới đây là 4 cách kiểm chứng trực quan:\n\n1. Thể tích & Độ tơi của bột: Cà phê nguyên chất 100% nở phồng gấp đôi sau khi rang nên 250g bột rang mộc trông đầy túi, bột tơi xốp và không bị vón cục bết dầu dính tay.\n2. Phản ứng Bloom với nước nóng: Khi châm nước 92–95°C, bột cà phê rang mới sủi bọt CO2 mịn đều và nở phồng tự nhiên, không chìm ngay hay tạo bọt xà phòng lâu tan.\n3. Màu sắc & Độ trong của nước cốt: Cà phê nguyên chất có màu nâu cánh gián đến nâu hổ phách trong trẻo khi soi dưới ánh sáng, không đen kịt đặc quánh như nước màu.\n4. Hương thơm tự nhiên: Dịu nhẹ mùi cacao, hạt rang và thoang thoảng hoa trái thay vì mùi hương liệu hóa học sực nức bám lâu trên ly rỗng.',
+      contentEn:
+        'Discerning drinkers increasingly demand 100% pure coffee free of roasted corn, soy, butter glazing, or synthetic flavoring. Look for four clear indicators:\n\n1. Loft & Dry Texture: Pure roasted coffee doubles in volume during roasting—grounds stay fluffy and dry, never clumping into oily paste.\n2. Natural Bloom Foam: Fresh 100% coffee fizzes smoothly as CO2 escapes at 92–95°C rather than collapsing immediately or forming soap-like bubbles.\n3. Translucent Amber-Brown Liquor: Held to light, pure black coffee gleams deep chestnut amber rather than opaque pitch-black.\n4. Clean Aromatic Decay: Genuine cocoa, toasted nut, and fruit notes fade gracefully in an empty cup rather than clinging like perfume.',
+      author: 'ROAR Quality Assurance',
+      readMinutes: 5,
+      imageKey: 'journal_tasting_archetypes',
+    },
+    // +2 New Articles for 'Coffee origins'
+    {
+      slug: 'tho-nhuong-dat-do-bazan-dak-lak-va-dak-nong',
+      category: 'Coffee origins',
+      tags: ['Đắk Lắk', 'Đắk Nông', 'Bazan', 'Robusta'],
+      titleVi: 'Đất Đỏ Bazan Tây Nguyên (Đắk Lắk – Đắk Nông): Nền Tảng Tạo Nên Robusta Đậm Sánh',
+      titleEn: 'Red Basalt Highlands (Đắk Lắk & Đắk Nông): The Soil Behind Bold Vietnamese Robusta',
+      excerptVi: 'Lớp đất núi lửa phong hóa sâu giàu khoáng chất sắt, kali cùng nắng gió cao nguyên tạo nên hàm lượng đường và thể chất khó nơi nào sánh bằng.',
+      excerptEn: 'Mineral-rich volcanic soils combined with dry harvest seasons produce unmatched Robusta body, sweetness, and espresso crema.',
+      contentVi:
+        'Nếu Cầu Đất là thánh địa của Arabica hương hoa, thì dải cao nguyên Buôn Ma Thuột – Krông Năng (Đắk Lắk) nối dài sang Đắk Mil (Đắk Nông) chính là trái tim của Robusta Việt Nam. Tầng đất đỏ bazan hình thành từ hoạt động núi lửa cổ đại có độ xốp cao, thoát nước tốt và giàu khoáng chất vi lượng.\n\nĐặc biệt, mùa thu hoạch rộ từ tháng 11 đến tháng 1 trùng khớp hoàn toàn với mùa khô nắng ráo và gió đông bắc ổn định, tạo điều kiện lý tưởng để phơi giàn Natural và Honey mà không bị nấm mốc.\n\nĐó là lý do những lô Robusta S18 và Culi tuyển chọn từ Đắk Lắk luôn mang vị sô-cô-la đen đậm đà, độ sánh cao và lớp crema vàng óng đặc trưng trong các dòng sản phẩm ROAR COFFEE®.',
+      contentEn:
+        'While Cầu Đất anchors Vietnam’s floral Arabica reputation, the volcanic plateaus stretching from Buôn Ma Thuột and Krông Năng (Đắk Lắk) into Đắk Mil (Đắk Nông) form the beating heart of Vietnamese Robusta.\n\nDeep weathered red basalt offers natural drainage and rich iron-potassium mineralogy. Crucially, the November–January harvest aligns with dry upland sunshine and crisp winds—ideal for spotless raised-bed Natural and Honey drying.\n\nThat synergy explains why ROAR COFFEE® Đắk Lắk Robusta S18 and Culi lots deliver such velvety dark chocolate body and dense espresso crema.',
+      author: 'ROAR Sourcing Team',
+      readMinutes: 5,
+      imageKey: 'origin_central_highlands',
+    },
+    {
+      slug: 'arabica-tay-bac-son-la-dien-bien-va-mang-den',
+      category: 'Coffee origins',
+      tags: ['Sơn La', 'Điện Biên', 'Măng Đen', 'Arabica'],
+      titleVi: 'Sơn La, Điện Biên & Măng Đen: Hành Trình Khám Phá Những Tiểu Vùng Arabica Núi Cao',
+      titleEn: 'Sơn La, Điện Biên & Măng Đen: Exploring Vietnam’s Rising High-Altitude Arabica Terroirs',
+      excerptVi: 'Ngoài Cầu Đất trứ danh, các triền núi lạnh giá phía Bắc và Măng Đen (Kon Tum) đang ghi dấu ấn với hương quả hạch, đường mía và cam chín.',
+      excerptEn: 'Beyond Cầu Đất, cool northern mountain slopes and Măng Đen (Kon Tum) are crafting expressive Arabica lots with stone fruit and cane sweetness.',
+      contentVi:
+        'Bản đồ Arabica Việt Nam đang mở rộng đầy thú vị vượt ra khỏi ranh giới Đà Lạt. Nhờ hệ thống sườn núi đá vôi và khí hậu mùa đông se lạnh rõ rệt, ba tiểu vùng sau đang trở thành tâm điểm của giới rang xay:\n\n• Sơn La (Chiềng Ban – Mai Sơn · 900–1.300m): Cho hạt Arabica Catimor có vị ngọt đường mía rất rõ, hậu vị hạt mắc-ca rang và độ chua dịu êm.\n• Mường Ảng (Điện Biên): Thời tiết khắc nghiệt hơn giúp mật độ hạt cứng chắc, dậy hương mận chín và cacao sữa khi rang Medium.\n• Măng Đen (Kon Tum · 1.200m): Được mệnh danh là "Đà Lạt thứ hai" của Bắc Tây Nguyên với rừng thông mát lành, cho tách Arabica thơm hương cam thảo và hoa rừng đặc sắc.',
+      contentEn:
+        'Vietnam’s specialty Arabica map reaches far beyond Đà Lạt. Cool highland winters and dramatic elevation slopes are putting three distinctive micro-regions on roasters’ radars:\n\n• Sơn La (Chiềng Ban & Mai Sơn · 900–1,300m): Distinct cane-sugar sweetness, toasted macadamia body, and gentle citrus acidity.\n• Mường Ảng (Điện Biên): Crisp winter nights yield dense Catimor beans bursting with ripe plum and milk chocolate.\n• Măng Đen (Kon Tum · 1,200m): Misty pine plateaus producing aromatic Arabica lots with wildflower lift and sweet licorice finish.',
+      author: 'ROAR Origins Research',
+      readMinutes: 6,
+      imageKey: 'journal_caudat_arabica',
     },
   ];
 
@@ -2795,6 +2960,95 @@ function runIncrementalMigrations(): void {
     for (const row of missingBarcodeRows) {
       updBarcode.run(generateEan13Barcode(row.id * 17 + 100), row.id);
     }
+  }
+
+  // 10. Upgrade remaining Instant & Gift Voucher legacy image keys to bespoke ROAR AI photography
+  const customImageUpgrades: Array<{ slug: string; target: string; legacyKeys: string[] }> = [
+    { slug: 'instant-silver-collection', target: '/assets/instant/instant-silver.jpg', legacyKeys: ['product_instant_silver_gold'] },
+    { slug: 'instant-gold-collection', target: '/assets/instant/instant-gold.jpg', legacyKeys: ['product_instant_silver_gold'] },
+    { slug: 'gift-voucher-50k', target: '/assets/vouchers/gift-voucher-50k.jpg', legacyKeys: ['hero-roast', 'product_robusta_house'] },
+    { slug: 'gift-voucher-100k', target: '/assets/vouchers/gift-voucher-100k.jpg', legacyKeys: ['signature-reserve', 'product_signature_reserve'] },
+    { slug: 'gift-voucher-500k', target: '/assets/vouchers/gift-voucher-500k.jpg', legacyKeys: ['signature-reserve', 'product_signature_reserve'] },
+    { slug: 'gift-voucher-1m', target: '/assets/vouchers/gift-voucher-1m.jpg', legacyKeys: ['signature-reserve', 'product_signature_reserve'] },
+  ];
+  for (const item of customImageUpgrades) {
+    const row = db.prepare('SELECT id, image_key FROM products WHERE slug = ?').get(item.slug) as
+      | { id: number; image_key: string }
+      | undefined;
+    if (row && (!row.image_key || item.legacyKeys.includes(row.image_key))) {
+      db.prepare('UPDATE products SET image_key = ? WHERE id = ?').run(item.target, row.id);
+    }
+  }
+
+  // 11. Upgrade Coffee Journal article image_key values to bespoke editorial AI illustrations
+  const journalImageUpgrades: Array<{ slug: string; target: string; legacyKeys: string[] }> = [
+    {
+      slug: 'understanding-cbu-washed-process-in-vietnam',
+      target: 'journal_cbu_washed',
+      legacyKeys: ['product_green_coffee_beans'],
+    },
+    {
+      slug: 'culi-peaberry-morphology-explained',
+      target: 'journal_culi_peaberry',
+      legacyKeys: ['product_robusta_house'],
+    },
+    {
+      slug: 'vietnamese-phin-and-espresso-precision',
+      target: 'journal_phin_espresso',
+      legacyKeys: ['hero_roar_coffee'],
+    },
+    {
+      slug: 'nghe-thuat-pha-phin-viet-nam-chuan-roar',
+      target: 'journal_phin_ritual',
+      legacyKeys: ['brewing-phin', 'product_brewing_ritual'],
+    },
+    {
+      slug: 'hanh-trinh-arabica-cau-dat-1500m',
+      target: 'journal_caudat_arabica',
+      legacyKeys: ['origin-highlands', 'origin_central_highlands'],
+    },
+    {
+      slug: 'phan-biet-natural-honey-va-cbu-washed',
+      target: 'journal_coffee_processes',
+      legacyKeys: ['green-beans', 'product_green_coffee_beans'],
+    },
+    {
+      slug: 'bi-quyet-chon-hat-rang-s18-cho-quan-espresso',
+      target: 'journal_s18_roastery',
+      legacyKeys: ['hero-roast', 'product_roasting_drum_clean'],
+    },
+    {
+      slug: '7-ca-tinh-roar-va-gu-thuong-thuc-cua-ban',
+      target: 'journal_tasting_archetypes',
+      legacyKeys: ['signature-reserve', 'product_signature_reserve'],
+    },
+    {
+      slug: 'van-hoa-cold-brew-va-qua-tang-ca-phe-cao-cap',
+      target: 'journal_coldbrew_gifting',
+      legacyKeys: ['origin-highlands', 'origin_central_highlands'],
+    },
+  ];
+  for (const item of journalImageUpgrades) {
+    const row = db.prepare('SELECT id, image_key FROM journal_articles WHERE slug = ?').get(item.slug) as
+      | { id: number; image_key: string }
+      | undefined;
+    if (row && (!row.image_key || item.legacyKeys.includes(row.image_key))) {
+      db.prepare('UPDATE journal_articles SET image_key = ? WHERE id = ?').run(item.target, row.id);
+    }
+  }
+
+  // 12. Normalize legacy Coffee Journal categories to the 5 canonical categories
+  const categoryNormalizationMap: Record<string, string> = {
+    Brewing: 'Brewing techniques',
+    Origins: 'Coffee origins',
+    Quality: 'Coffee processing',
+    'B2B & HORECA': 'Coffee knowledge',
+    Culture: 'Coffee knowledge',
+    Lifestyle: 'Coffee knowledge',
+  };
+  const updateCatStmt = db.prepare('UPDATE journal_articles SET category = ? WHERE category = ?');
+  for (const [legacyCat, canonicalCat] of Object.entries(categoryNormalizationMap)) {
+    updateCatStmt.run(canonicalCat, legacyCat);
   }
 }
 

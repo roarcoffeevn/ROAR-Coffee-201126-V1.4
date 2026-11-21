@@ -18,6 +18,7 @@ import {
   verifyPassword,
 } from './server/auth.ts';
 import { db, initDatabase, logAudit } from './server/db.ts';
+import { buildLiveShippingTracking } from './src/lib/shippingTracking.ts';
 import {
   buildCmsSnapshot,
   exportCmsSnapshotToDisk,
@@ -1333,8 +1334,14 @@ app.get('/api/products', (req, res) => {
   const params: any[] = [];
 
   if (category && category !== 'all') {
-    sql += ' AND category = ?';
-    params.push(category);
+    if (category === 'gift_voucher') {
+      sql += " AND (sub_category = 'Gift Voucher' OR slug LIKE 'gift-voucher-%')";
+    } else if (category === 'roasted') {
+      sql += " AND category = 'roasted' AND COALESCE(sub_category, '') != 'Gift Voucher'";
+    } else {
+      sql += ' AND category = ?';
+      params.push(category);
+    }
   }
   if (screen && screen !== 'all') {
     sql += ' AND screen_size = ?';
@@ -1865,6 +1872,7 @@ app.get('/api/orders/track', (req, res) => {
 
   const enriched = matchingOrders.map((o) => ({
     ...o,
+    shipping_tracking: buildLiveShippingTracking(o),
     items: db
       .prepare(
         "SELECT oi.*, p.image_key as product_image_key, p.slug as product_slug, p.category as product_category, CASE WHEN p.category = 'roasted_beans' OR (p.pricing_tiers_json IS NOT NULL AND p.pricing_tiers_json != '[]' AND p.pricing_tiers_json != '') THEN 'kg' ELSE 'unit' END as unit FROM order_items oi LEFT JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?"
@@ -1873,6 +1881,42 @@ app.get('/api/orders/track', (req, res) => {
   }));
 
   res.json({ orders: enriched, order: enriched[0] });
+});
+
+app.get('/api/orders/shipping-status', (req, res) => {
+  const rawOrderId = String(req.query.orderId || req.query.orderNumber || '').trim().toUpperCase();
+  const rawEmail = String(req.query.email || '').trim().toLowerCase();
+
+  if (!rawOrderId || !rawEmail) {
+    res.status(400).json({ error: 'Vui lòng nhập đầy đủ Mã đơn hàng (Order ID) và Email đặt hàng.' });
+    return;
+  }
+
+  const order = db
+    .prepare('SELECT * FROM orders WHERE UPPER(TRIM(order_number)) = ? AND LOWER(TRIM(customer_email)) = ? ORDER BY id DESC LIMIT 1')
+    .get(rawOrderId, rawEmail) as any;
+
+  if (!order) {
+    res.status(404).json({ error: 'Không tìm thấy đơn hàng khớp với Mã đơn hàng và Email đã nhập.' });
+    return;
+  }
+
+  const items = db
+    .prepare(
+      "SELECT oi.*, p.image_key as product_image_key, p.slug as product_slug, p.category as product_category, CASE WHEN p.category = 'roasted_beans' OR (p.pricing_tiers_json IS NOT NULL AND p.pricing_tiers_json != '[]' AND p.pricing_tiers_json != '') THEN 'kg' ELSE 'unit' END as unit FROM order_items oi LEFT JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?"
+    )
+    .all(order.id);
+
+  const shipping = buildLiveShippingTracking(order);
+  res.json({
+    ok: true,
+    shipping,
+    order: {
+      ...order,
+      shipping_tracking: shipping,
+      items,
+    },
+  });
 });
 
 app.post('/api/orders/:orderNumber/request-action', requireAuth, (req: AuthedRequest, res) => {
@@ -1996,7 +2040,11 @@ app.get('/api/journal/:slug', (req, res) => {
     res.status(404).json({ error: 'Article not found' });
     return;
   }
-  const related = db.prepare('SELECT * FROM journal_articles WHERE id != ? AND published = 1 LIMIT 3').all(article.id);
+  const related = db
+    .prepare(
+      'SELECT * FROM journal_articles WHERE id != ? AND published = 1 ORDER BY CASE WHEN category = ? THEN 0 ELSE 1 END, published_at DESC, id DESC LIMIT 3'
+    )
+    .all(article.id, article.category);
   res.json({
     article: { ...article, tags: JSON.parse(article.tags_json || '[]') },
     related,

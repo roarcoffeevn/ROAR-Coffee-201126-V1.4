@@ -12,6 +12,7 @@ import { I18nProvider, stripLocalePrefix, useI18n } from './i18n/I18nContext';
 import { AccountPage } from './pages/AccountPage';
 import { AdminCmsPage } from './pages/AdminCmsPage';
 import { ContactPage, LegalPage, OemExportPage, PartnersPage } from './pages/B2BPages';
+import { BrewingHandbookPage } from './pages/BrewingHandbookPage';
 import { CartPage, CheckoutPage, OrderTrackPage } from './pages/CartCheckoutPage';
 import { GreenCoffeePage } from './pages/GreenCoffeePage';
 import { HomePage } from './pages/HomePage';
@@ -131,14 +132,28 @@ function renderPublicRoutes() {
     <Route path="shop" element={<ShopPage />} />
     <Route path="coffee/roasted" element={<ShopPage defaultCategory="roasted" />} />
     <Route path="coffee/roasted-beans" element={<ShopPage defaultCategory="roasted_beans" />} />
+    <Route path="coffee/green-coffee" element={<ShopPage defaultCategory="green_bean" />} />
     <Route path="coffee/instant" element={<ShopPage defaultCategory="instant" />} />
+    <Route path="coffee/gift-vouchers" element={<ShopPage defaultCategory="gift_voucher" />} />
     <Route path="coffee/green-beans" element={<GreenCoffeePage />} />
+    <Route path="green-coffee" element={<GreenCoffeePage />} />
+    <Route path="category/roasted-coffee" element={<ShopPage defaultCategory="roasted" />} />
+    <Route path="category/roasted-beans" element={<ShopPage defaultCategory="roasted_beans" />} />
+    <Route path="category/instant" element={<ShopPage defaultCategory="instant" />} />
+    <Route path="category/gift-vouchers" element={<ShopPage defaultCategory="gift_voucher" />} />
+    <Route path="category/green-coffee" element={<ShopPage defaultCategory="green_bean" />} />
+    <Route path="b2b" element={<PartnersPage />} />
+    <Route path="track-order" element={<OrderTrackPage />} />
     <Route path="product/:slug" element={<ProductDetailPage />} />
     <Route path="personalities" element={<PersonalitiesPage />} />
     <Route path="personalities/:slug" element={<PersonalitiesPage />} />
     <Route path="origins" element={<OriginsPage />} />
     <Route path="farm-to-cup" element={<FarmToCupPage />} />
     <Route path="brewing" element={<BrewingGuidePage />} />
+    <Route path="brewing-handbook" element={<BrewingHandbookPage />} />
+    <Route path="brewing-handbook/:slug" element={<BrewingHandbookPage />} />
+    <Route path="cam-nang-pha-che" element={<BrewingHandbookPage />} />
+    <Route path="cam-nang-pha-che/:slug" element={<BrewingHandbookPage />} />
     <Route path="about" element={<AboutPage />} />
     <Route path="signature-reserve" element={<SignatureReservePage />} />
     <Route path="farm-membership" element={<FarmMembershipPage />} />

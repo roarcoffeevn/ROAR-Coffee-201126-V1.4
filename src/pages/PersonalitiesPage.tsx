@@ -42,15 +42,21 @@ export const PersonalitiesPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             <div className="lg:col-span-5">
               <div
-                className={`aspect-square rounded-2xl overflow-hidden border ${
-                  isPanther ? 'border-[#C6A667]/40 bg-[#141414]' : 'border-[#202020]/10 dark:border-white/10 bg-white dark:bg-[#16221C]'
+                className={`aspect-square rounded-2xl overflow-hidden border p-4 sm:p-5 ${
+                  isPanther ? 'border-[#C6A667]/35 bg-[#111312]' : 'border-[#202020]/10 dark:border-[#C6A667]/20 bg-[#FAF8F3] dark:bg-[#141E19]'
                 }`}
               >
-                <MediaImage
-                  imageKey={selected.custom_image_url || selected.image_key}
-                  alt={`${selected.animal_en} — ${selected.animal_vi}`}
-                  className="w-full h-full object-cover"
-                />
+                <div
+                  className={`w-full h-full rounded-xl overflow-hidden border ${
+                    isPanther ? 'bg-[#090A09] border-[#C6A667]/25' : 'bg-[#F3EFE5] border-[#202020]/8 dark:border-[#C6A667]/15'
+                  }`}
+                >
+                  <MediaImage
+                    imageKey={selected.custom_image_url || selected.image_key}
+                    alt={`${selected.animal_en} — ${selected.animal_vi}`}
+                    className="w-full h-full object-cover scale-[1.09]"
+                  />
+                </div>
               </div>
             </div>
 
@@ -117,34 +123,49 @@ export const PersonalitiesPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-        {personalities.map((m) => {
+        {personalities.map((m, idx) => {
           const isPanther = m.slug === 'black-panther';
+          const indexLabel = String(idx + 1).padStart(2, '0');
           return (
             <div
               key={m.slug}
-              className={`rounded-2xl border overflow-hidden flex flex-col justify-between transition-transform hover:-translate-y-1 ${
+              className={`group rounded-2xl border overflow-hidden flex flex-col justify-between transition-[transform,border-color] duration-200 hover:-translate-y-0.5 ${
                 isPanther
-                  ? 'bg-[#111111] text-[#F8F5EF] border-[#C6A667]/40 md:col-span-2 lg:col-span-3 lg:grid lg:grid-cols-12'
-                  : 'bg-white dark:bg-[#16221C] text-[#202020] dark:text-[#F1EFEA] border-[#202020]/10 dark:border-white/10'
+                  ? 'bg-[#101211] text-[#F8F5EF] border-[#C6A667]/35 md:col-span-2 lg:col-span-3 lg:grid lg:grid-cols-12'
+                  : 'bg-[#FAF8F3] dark:bg-[#121C17] text-[#202020] dark:text-[#F1EFEA] border-[#202020]/10 dark:border-white/10 hover:border-[#00552B]/40 dark:hover:border-[#C6A667]/40'
               }`}
             >
-              <div className={isPanther ? 'lg:col-span-4 aspect-square' : 'aspect-square bg-[#F8F5EF] dark:bg-[#0E1512]'}>
+              <div
+                className={
+                  isPanther
+                    ? 'lg:col-span-4 aspect-square bg-[#090A09] overflow-hidden'
+                    : 'aspect-square bg-[#F3EFE5] overflow-hidden border-b border-[#202020]/8 dark:border-[#C6A667]/15'
+                }
+              >
                 <MediaImage
                   imageKey={m.custom_image_url || m.image_key}
                   alt={`${m.animal_en} — ${m.animal_vi}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover scale-[1.09] group-hover:scale-[1.12] transition-transform duration-200"
                 />
               </div>
 
               <div className={`${isPanther ? 'lg:col-span-8 p-8 flex flex-col justify-center' : 'p-6 flex-1 flex flex-col justify-between'} space-y-4`}>
                 <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={`font-mono text-xs font-semibold tabular-nums ${isPanther ? 'text-[#C6A667]' : 'text-[#00552B] dark:text-[#C6A667]'}`}>
+                      {indexLabel} / {String(personalities.length).padStart(2, '0')}
+                    </span>
+                    <span className="text-[11px] font-medium uppercase tracking-wider opacity-50">
+                      {m.animal_en}
+                    </span>
+                  </div>
                   <p className={`text-xs font-semibold uppercase tracking-wider ${isPanther ? 'text-[#C6A667]' : 'text-[#00552B] dark:text-[#C6A667]'}`}>
                     {lang === 'vi' ? m.traits_vi : m.traits_en}
                   </p>
-                  <h2 className="text-2xl font-bold">
+                  <h2 className="text-2xl font-bold tracking-tight">
                     {lang === 'vi' ? m.animal_vi : `${m.animal_en} · ${m.animal_vi}`}
                   </h2>
-                  <p className={`text-sm leading-relaxed whitespace-pre-line line-clamp-6 ${isPanther ? 'text-[#F8F5EF]/80' : 'text-[#202020]/75 dark:text-[#F1EFEA]/75'}`}>
+                  <p className={`text-sm leading-relaxed whitespace-pre-line line-clamp-5 ${isPanther ? 'text-[#F8F5EF]/80' : 'text-[#202020]/75 dark:text-[#F1EFEA]/75'}`}>
                     {lang === 'vi' ? m.story_vi : m.story_en}
                   </p>
                 </div>
