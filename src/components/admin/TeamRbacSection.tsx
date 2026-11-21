@@ -141,8 +141,8 @@ export const TeamRbacSection: React.FC<TeamRbacSectionProps> = ({
     }
     setEditingMemberId(m.id);
     setEditRole((m.adminRole as AdminRoleKey) || 'custom_staff');
-    setEditPerms([...(m.adminPermissions || [])]);
-    setEditName(m.fullName);
+    setEditPerms([...(Array.isArray(m.adminPermissions) ? m.adminPermissions : [])]);
+    setEditName(m.fullName || '');
   };
 
   const saveMemberRbac = async (id: number) => {
@@ -446,7 +446,7 @@ export const TeamRbacSection: React.FC<TeamRbacSectionProps> = ({
                       <span className="text-[11px] text-slate-500 font-mono tabular-nums">
                         {m.adminRole === 'super_admin'
                           ? t('Toàn quyền 12/12 phân hệ', 'All 12/12 modules')
-                          : `${m.adminPermissions.length}/12 ${t('phân hệ', 'modules')}`}
+                          : `${(Array.isArray(m.adminPermissions) ? m.adminPermissions : []).length}/12 ${t('phân hệ', 'modules')}`}
                       </span>
                     </div>
                     <button
@@ -465,7 +465,7 @@ export const TeamRbacSection: React.FC<TeamRbacSectionProps> = ({
                   <p className="text-[11px] text-slate-500">
                     {m.adminRole === 'super_admin'
                       ? ADMIN_PERMISSION_META.map((p) => (lang === 'vi' ? p.labelVi : p.labelEn)).join(' · ')
-                      : m.adminPermissions
+                      : (Array.isArray(m.adminPermissions) ? m.adminPermissions : [])
                           .map((pk) => {
                             const meta = ADMIN_PERMISSION_META.find((pm) => pm.key === pk);
                             return meta ? (lang === 'vi' ? meta.labelVi : meta.labelEn) : pk;

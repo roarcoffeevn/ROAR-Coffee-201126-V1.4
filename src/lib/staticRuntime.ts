@@ -724,50 +724,72 @@ export async function handleStaticApiFallback(
     if (pathname === '/api/admin/team' && method === 'GET') {
       const admins = state.users
         .filter((x) => x.role === 'admin')
-        .map((x) => ({
-          id: x.id,
-          email: x.email,
-          full_name: x.fullName,
-          phone: x.phone,
-          member_code: x.memberCode,
-          admin_role: x.adminRole || 'super_admin',
-          admin_permissions: x.adminPermissions || [...ALL_ADMIN_PERMISSIONS],
-          created_at: x.createdAt,
-        }));
+        .map((x) => {
+          const roleKey = x.adminRole || 'super_admin';
+          const perms =
+            roleKey === 'super_admin'
+              ? [...ALL_ADMIN_PERMISSIONS]
+              : Array.isArray(x.adminPermissions)
+                ? x.adminPermissions
+                : ['overview'];
+          return {
+            id: x.id,
+            email: x.email,
+            fullName: x.fullName,
+            phone: x.phone || '',
+            role: x.role,
+            adminRole: roleKey,
+            adminPermissions: perms,
+            memberCode: x.memberCode,
+            tier: x.tier || 'ROAR Gold',
+            createdAt: x.createdAt,
+          };
+        });
       const nonAdmins = state.users
         .filter((x) => x.role !== 'admin')
         .map((x) => ({
           id: x.id,
           email: x.email,
           full_name: x.fullName,
-          phone: x.phone,
+          phone: x.phone || '',
           role: x.role,
           member_code: x.memberCode,
         }));
       return jsonResponse({ admins, nonAdmins, auditLogs: [] });
     }
     if (pathname === '/api/admin/team' && method === 'POST') {
-      const mode = body.mode || (body.existingUserId ? 'promote' : 'create');
-      const adminRole = String(body.adminRole || 'editor');
-      const permissions = Array.isArray(body.permissions) ? body.permissions : [...ALL_ADMIN_PERMISSIONS];
-      if (mode === 'promote' && body.existingUserId) {
-        const target = state.users.find((x) => x.id === Number(body.existingUserId));
-        if (!target) return jsonResponse({ error: 'Không tìm thấy tài khoản.' }, 404);
-        target.role = 'admin';
-        target.adminRole = adminRole;
-        target.adminPermissions = permissions;
-        writeState(state);
-        return jsonResponse({ ok: true, id: target.id });
-      }
       const email = String(body.email || '').trim().toLowerCase();
+      const adminRole = String(body.adminRole || 'content_editor');
+      const permissions =
+        adminRole === 'super_admin'
+          ? [...ALL_ADMIN_PERMISSIONS]
+          : Array.isArray(body.permissions)
+            ? body.permissions
+            : ['overview'];
+
+      const existingById =
+        body.mode === 'promote' && body.existingUserId
+          ? state.users.find((x) => x.id === Number(body.existingUserId))
+          : undefined;
+      const existingByEmail = email
+        ? state.users.find((x) => x.email.toLowerCase() === email)
+        : undefined;
+      const existing = existingById || existingByEmail;
+
+      if (existing) {
+        existing.role = 'admin';
+        existing.adminRole = adminRole;
+        existing.adminPermissions = permissions;
+        existing.emailVerified = true;
+        writeState(state);
+        return jsonResponse({ ok: true, id: existing.id, promoted: true });
+      }
+
       const fullName = String(body.fullName || '').trim();
       const password = String(body.password || '');
       const phone = String(body.phone || '').trim();
       if (!email || !fullName || password.length < 6) {
         return jsonResponse({ error: 'Vui lòng nhập đầy đủ họ tên, email và mật khẩu (≥6 ký tự).' }, 400);
-      }
-      if (state.users.some((x) => x.email.toLowerCase() === email)) {
-        return jsonResponse({ error: 'Email này đã tồn tại trong hệ thống.' }, 409);
       }
       const nextId = Math.max(10, ...state.users.map((x) => x.id)) + 1;
       const newStaff: StaticUserRecord = {
@@ -788,14 +810,33 @@ export async function handleStaticApiFallback(
       };
       state.users.push(newStaff);
       writeState(state);
-      return jsonResponse({ ok: true, id: newStaff.id }, 201);
+      return jsonResponse({ ok: true, id: newStaff.id, promoted: false }, 201);
     }
     if (pathname.startsWith('/api/admin/team/') && method === 'PATCH') {
       const id = Number(pathname.split('/').pop());
       const target = state.users.find((x) => x.id === id);
       if (!target) return jsonResponse({ error: 'Không tìm thấy nhân sự.' }, 404);
+      const superAdmins = state.users.filter((x) => x.role === 'admin' && (x.adminRole || 'super_admin') === 'super_admin');
+      if (body.revokeAdmin) {
+        if (target.id === u.id) {
+          return jsonResponse({ error: 'Không thể tự thu hồi quyền quản trị của chính tài khoản đang đăng nhập.' }, 400);
+        }
+        if ((target.adminRole || 'super_admin') === 'super_admin' && superAdmins.length <= 1) {
+          return jsonResponse({ error: 'Phải giữ lại ít nhất 1 Quản trị Tối cao (Super Admin).' }, 400);
+        }
+        target.role = 'customer';
+        target.adminRole = 'none';
+        target.adminPermissions = [];
+        writeState(state);
+        return jsonResponse({ ok: true });
+      }
+      if (body.fullName && String(body.fullName).trim()) target.fullName = String(body.fullName).trim();
       if (body.adminRole) target.adminRole = String(body.adminRole);
-      if (Array.isArray(body.permissions)) target.adminPermissions = body.permissions;
+      if (target.adminRole === 'super_admin') {
+        target.adminPermissions = [...ALL_ADMIN_PERMISSIONS];
+      } else if (Array.isArray(body.permissions)) {
+        target.adminPermissions = body.permissions;
+      }
       writeState(state);
       return jsonResponse({ ok: true });
     }
@@ -804,8 +845,8 @@ export async function handleStaticApiFallback(
       const target = state.users.find((x) => x.id === id);
       if (!target) return jsonResponse({ error: 'Không tìm thấy nhân sự.' }, 404);
       target.role = 'customer';
-      target.adminRole = undefined;
-      target.adminPermissions = undefined;
+      target.adminRole = 'none';
+      target.adminPermissions = [];
       writeState(state);
       return jsonResponse({ ok: true });
     }
