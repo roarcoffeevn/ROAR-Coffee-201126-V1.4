@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-11-20T16:23:38.888Z",
+  "exportedAt": "2026-11-21T02:09:06.281Z",
   "tables": {
     "products": [
       {
@@ -43,7 +43,7 @@
         "density": "N/A (Roasted)",
         "defect_info": "Roasted spec configurable",
         "grading_spec": "ROAR Roasted Standard",
-        "image_key": "product_robusta_house",
+        "image_key": "/assets/roasted-ground/robusta-house-blend.jpg",
         "gallery_images_json": "[]",
         "featured": 1,
         "created_at": "2026-11-17 08:14:49"
@@ -88,7 +88,7 @@
         "density": "N/A (Roasted)",
         "defect_info": "Roasted spec configurable",
         "grading_spec": "ROAR Roasted Standard",
-        "image_key": "product_arabica_selection",
+        "image_key": "/assets/roasted-ground/arabica-selection.jpg",
         "gallery_images_json": "[]",
         "featured": 1,
         "created_at": "2026-11-17 08:14:49"
@@ -133,7 +133,7 @@
         "density": "N/A (Roasted)",
         "defect_info": "Reserve Lot Spec",
         "grading_spec": "Signature Reserve Standard",
-        "image_key": "product_signature_reserve",
+        "image_key": "/assets/roasted-ground/signature-reserve.jpg",
         "gallery_images_json": "[]",
         "featured": 1,
         "created_at": "2026-11-17 08:14:49"
@@ -178,7 +178,7 @@
         "density": "N/A (Roasted)",
         "defect_info": "Confidential",
         "grading_spec": "ROAR Roasted Standard",
-        "image_key": "product_robusta_house",
+        "image_key": "/assets/roasted-ground/roar-dam-bold.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -223,7 +223,7 @@
         "density": "N/A (Roasted)",
         "defect_info": "Confidential",
         "grading_spec": "ROAR Roasted Standard",
-        "image_key": "product_robusta_house",
+        "image_key": "/assets/roasted-ground/roar-phin-heritage.jpg",
         "gallery_images_json": "[]",
         "featured": 0,
         "created_at": "2026-11-17 08:14:49"
@@ -268,7 +268,7 @@
         "density": "N/A (Roasted)",
         "defect_info": "Confidential",
         "grading_spec": "ROAR Espresso Standard",
-        "image_key": "product_arabica_selection",
+        "image_key": "/assets/roasted-ground/roar-espresso.jpg",
         "gallery_images_json": "[]",
         "featured": 1,
         "created_at": "2026-11-17 08:14:49"
@@ -313,7 +313,7 @@
         "density": "N/A (Roasted)",
         "defect_info": "Confidential",
         "grading_spec": "ROAR Espresso Gold Standard",
-        "image_key": "hero_signature_reserve_banner",
+        "image_key": "/assets/roasted-ground/roar-espresso-gold.jpg",
         "gallery_images_json": "[]",
         "featured": 1,
         "created_at": "2026-11-17 08:14:49"
